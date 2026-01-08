@@ -1,0 +1,5 @@
+{
+  "name": "HiResume - Privacy-First Resume Builder",
+  "description": "A secure, client-side multilingual resume builder. Create ATS-friendly resumes in English or French and export to PDF or LaTeX without signing up.",
+  "requestFramePermissions": []
+}
