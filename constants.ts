@@ -1,4 +1,4 @@
-false { ResumeData, Translation, Language } from './types';
+import { ResumeData, Translation, Language } from './types';
 
 // GLOBAL AD CONFIGURATION
 // Set to 'true' to show ad placeholders.
