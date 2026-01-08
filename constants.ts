@@ -3,7 +3,7 @@ import { ResumeData, Translation, Language } from './types';
 // GLOBAL AD CONFIGURATION
 // Set to 'true' to show ad placeholders.
 // Set to 'false' to hide all ad spaces and collapse their layout containers.
-export const SHOW_ADS = true;
+export const SHOW_ADS = false;
 
 export const INITIAL_RESUME_STATE: ResumeData = {
   templateId: 'modern',
