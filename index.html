@@ -34,7 +34,99 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <!-- Mammoth.js for DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Screen Preview Styles */
+  .a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform-origin: top center;
+  }
+
+  /* Print / PDF Generation Styles */
+  @media print {
+    @page {
+      margin: 0;
+      size: A4; /* Explicitly set size to A4 */
+    }
+
+    /* Helper to hide UI elements tagged with no-print */
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Target the Preview specifically */
+    #resume-preview {
+      visibility: visible !important;
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      
+      /* Force standard A4 dimensions */
+      width: 210mm;
+      /* Use the variable passed from the handlePdfExport function */
+      transform: scale(var(--print-scale, 1));
+      transform-origin: top left;
+      
+      /* Ensure text doesn't overflow horizontally when scaled */
+      overflow: visible;
+    }
+
+    /* Hide everything else */
+    body > *:not(#resume-preview) {
+      display: none !important;
+    }
+  }
+</style>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
+    "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
+    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
+    "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
+    "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
+    "clsx": "https://esm.sh/clsx@2.1.1",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "docx": "https://esm.sh/docx@8.5.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+  </script>
+</head>
+  <body class="bg-gray-50 text-slate-900">
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
       body {
         font-family: 'Inter', sans-serif;
