@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, TemplateId } from '../types';
 import { Editor } from './Editor';
@@ -16,10 +16,16 @@ interface BuilderProps {
   t: Translation;
 }
 
+const A4_HEIGHT_PX = 1122; // ≈ 297mm at 96dpi
+const MIN_SCALE = 0.82;
+const SCALE_STEP = 0.01;
+
 export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore();
   const stepperRef = useRef<HTMLDivElement>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [fontScale, setFontScale] = useState(1);
 
   const steps = [
     { id: 0, label: t.steps.personal, icon: User },
@@ -43,62 +49,64 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   useEffect(() => {
     if (stepperRef.current) {
       const activeBtn = stepperRef.current.querySelector('[data-active="true"]');
-      if (activeBtn) {
-        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-      }
+      activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center' });
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
+  // 🔒 AUTO FONT SCALE TO FORCE 1 PAGE
+  useLayoutEffect(() => {
+    if (currentStep !== 6) return;
+    const el = previewWrapperRef.current;
+    if (!el) return;
+
+    let scale = 1;
+    el.style.setProperty('--resume-scale', `${scale}`);
+
+    while (el.scrollHeight > A4_HEIGHT_PX && scale > MIN_SCALE) {
+      scale -= SCALE_STEP;
+      el.style.setProperty('--resume-scale', `${scale}`);
+    }
+
+    setFontScale(scale);
+  }, [resume, currentStep, resume.templateId]);
+
+  // ✅ HIGH QUALITY 1-PAGE PDF (NO STRETCH)
   const handlePdfExport = async () => {
     const element = document.getElementById('resume-preview');
     if (!element) return;
 
     setIsGeneratingPdf(true);
 
-    // @ts-ignore
-    if (typeof html2pdf === 'undefined') {
-      window.print();
-      setIsGeneratingPdf(false);
-      return;
-    }
-
-    const opt = {
-      margin: 0,
-      filename: 'resume.pdf',
-      image: { type: 'jpeg', quality: 1 },
-      html2canvas: {
-        scale: 4,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        scrollY: 0
-      },
-      jsPDF: {
-        unit: 'mm',
-        format: 'a4',
-        orientation: 'portrait'
-      }
-    };
-
     try {
       // @ts-ignore
-      const worker = html2pdf().set(opt).from(element).toCanvas();
-      const canvas = await worker.get('canvas');
+      const worker = html2pdf().set({
+        margin: 0,
+        filename: 'resume.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: {
+          scale: 4,
+          backgroundColor: '#ffffff',
+          useCORS: true
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(element).toCanvas();
 
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const canvas = await worker.get('canvas');
+      const imgData = canvas.toDataURL('image/jpeg', 1);
 
       // @ts-ignore
       const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-      const pdf = new jsPDF(opt.jsPDF);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeight);
       pdf.save('resume.pdf');
-    } catch (err) {
-      console.error(err);
+
+    } catch (e) {
+      console.error(e);
       window.print();
     } finally {
       setIsGeneratingPdf(false);
@@ -112,147 +120,95 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   const handleDocxExport = async () => {
     const blob = await generateDocx(resume, t);
-    downloadFile(
-      blob,
-      'resume.docx',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    );
+    downloadFile(blob, 'resume.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   };
 
-  const maxStep = 6;
-  const isPreview = currentStep === maxStep;
+  const isPreview = currentStep === 6;
 
   return (
     <div className="flex flex-col w-full min-h-[calc(100vh-80px)]">
+
       {/* STEPPER */}
       <div className="sticky top-16 z-30 bg-white border-b no-print">
-        <div className="max-w-7xl mx-auto">
-          <div
-            ref={stepperRef}
-            className="flex gap-2 overflow-x-auto px-4 py-3"
-          >
-            {steps.map(step => {
-              const Icon = step.icon;
-              const active = currentStep === step.id;
-              const done = currentStep > step.id;
-
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => setStep(step.id)}
-                  data-active={active}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${
-                    active
-                      ? 'bg-slate-900 text-white'
-                      : done
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'bg-white text-slate-500'
-                  }`}
-                >
-                  {done ? <CheckCircle2 size={16} /> : <Icon size={16} />}
-                  {step.label}
-                </button>
-              );
-            })}
-          </div>
+        <div ref={stepperRef} className="flex gap-2 overflow-x-auto px-4 py-3">
+          {steps.map(s => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setStep(s.id)}
+                data-active={currentStep === s.id}
+                className={`px-4 py-2 rounded-full flex gap-2 items-center text-sm font-bold ${
+                  currentStep === s.id
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white border text-slate-500'
+                }`}
+              >
+                <Icon size={16} />
+                {s.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* CONTENT */}
       <div className="flex-grow bg-slate-50">
-        <div className="max-w-4xl mx-auto p-4 md:p-8 pb-32">
-          {!isPreview && (
-            <div className="max-w-2xl mx-auto">
-              <Editor t={t} />
-              {SHOW_ADS && <AdSpace className="h-24 mt-8" />}
-            </div>
-          )}
+        <div className="max-w-4xl mx-auto p-6">
+
+          {!isPreview && <Editor t={t} />}
 
           {isPreview && (
-            <div className="flex flex-col gap-8">
-              {/* ACTIONS */}
-              <div className="bg-white rounded-xl p-6 no-print">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    onClick={handlePdfExport}
-                    disabled={isGeneratingPdf}
-                    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-xl font-bold"
-                  >
-                    {isGeneratingPdf ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <Printer size={18} />
-                    )}
-                    PDF
+            <>
+              <div className="bg-white p-6 rounded-xl shadow-sm no-print">
+                <div className="grid grid-cols-3 gap-3">
+                  <button onClick={handlePdfExport} disabled={isGeneratingPdf}
+                    className="bg-blue-600 text-white py-3 rounded-xl font-bold">
+                    {isGeneratingPdf ? 'Generating…' : 'PDF'}
                   </button>
-
-                  <button
-                    onClick={handleDocxExport}
-                    className="flex items-center justify-center gap-2 border px-4 py-3 rounded-xl font-bold"
-                  >
-                    <FileText size={18} /> Word
-                  </button>
-
-                  <button
-                    onClick={handleLatexExport}
-                    className="flex items-center justify-center gap-2 border px-4 py-3 rounded-xl font-bold"
-                  >
-                    <Code size={18} /> LaTeX
-                  </button>
-                </div>
-
-                <div className="flex gap-3 mt-6 overflow-x-auto">
-                  {templates.map(tpl => (
-                    <button
-                      key={tpl.id}
-                      onClick={() => setTemplateId(tpl.id)}
-                      className={`px-5 py-2 rounded-xl font-bold border ${
-                        resume.templateId === tpl.id
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-white'
-                      }`}
-                    >
-                      {tpl.name}
-                    </button>
-                  ))}
+                  <button onClick={handleDocxExport} className="border py-3 rounded-xl font-bold">Word</button>
+                  <button onClick={handleLatexExport} className="border py-3 rounded-xl font-bold">LaTeX</button>
                 </div>
               </div>
 
-              {/* PREVIEW */}
-              <div className="overflow-x-auto">
-                <div className="min-w-[210mm] origin-top scale-[0.9] md:scale-100">
+              {/* 🔒 LOCKED A4 PREVIEW */}
+              <div className="mt-8 overflow-hidden">
+                <div
+                  ref={previewWrapperRef}
+                  id="resume-preview"
+                  style={{
+                    width: '210mm',
+                    height: '297mm',
+                    transformOrigin: 'top left',
+                    fontSize: `calc(1rem * var(--resume-scale, 1))`,
+                    '--resume-scale': fontScale
+                  } as React.CSSProperties}
+                  className="bg-white shadow-lg mx-auto"
+                >
                   <Preview t={t} />
                 </div>
               </div>
 
-              <AdSpace className="h-24" />
-            </div>
+              {SHOW_ADS && <AdSpace className="h-24 mt-6" />}
+            </>
           )}
         </div>
       </div>
 
-      {/* FOOTER NAV */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 no-print">
-        <div className="max-w-4xl mx-auto flex gap-4">
-          <button
-            disabled={currentStep === 0}
-            onClick={() => setStep(Math.max(0, currentStep - 1))}
-            className="flex-1 border rounded-xl py-3 font-bold"
-          >
-            <ChevronLeft size={18} />
+      {/* FOOTER */}
+      <div className="fixed bottom-0 w-full bg-white border-t p-4 no-print">
+        <div className="max-w-4xl mx-auto flex justify-between">
+          <button onClick={() => setStep(Math.max(0, currentStep - 1))}
+            className="border px-6 py-3 rounded-xl font-bold">
+            <ChevronLeft /> Back
           </button>
-
-          <button
-            onClick={() =>
-              setStep(isPreview ? 0 : Math.min(maxStep, currentStep + 1))
-            }
-            className="flex-1 bg-blue-600 text-white rounded-xl py-3 font-bold"
-          >
-            {isPreview ? 'Edit' : 'Next'}
-            {!isPreview && <ChevronRight size={18} />}
+          <button onClick={() => setStep(Math.min(6, currentStep + 1))}
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">
+            Next <ChevronRight />
           </button>
         </div>
       </div>
+
     </div>
   );
 };
