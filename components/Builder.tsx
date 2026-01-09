@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useResumeStore } from '../store';
 import { Translation, TemplateId } from '../types';
 import { Editor } from './Editor';
@@ -6,7 +6,7 @@ import { Preview } from './Preview';
 import { AdSpace } from './AdSpace';
 import { SHOW_ADS } from '../constants';
 import { generateLatex, generateDocx, downloadFile } from '../utils';
-import { User, Briefcase, FolderGit2, GraduationCap, Award, Zap, Eye, ChevronRight, ChevronLeft, Download, Printer, FileText, Code, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Printer, Code, FileText, Download } from 'lucide-react';
 
 interface BuilderProps {
   t: Translation;
@@ -14,16 +14,15 @@ interface BuilderProps {
 
 export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore();
-  const stepperRef = useRef<HTMLDivElement>(null);
 
   const steps = [
-    { id: 0, label: t.steps.personal, icon: User },
-    { id: 1, label: t.steps.experience, icon: Briefcase },
-    { id: 2, label: t.steps.projects, icon: FolderGit2 },
-    { id: 3, label: t.steps.education, icon: GraduationCap },
-    { id: 4, label: t.steps.certifications, icon: Award },
-    { id: 5, label: t.steps.skills, icon: Zap },
-    { id: 6, label: t.steps.preview, icon: Eye },
+    { id: 0, label: t.steps.personal },
+    { id: 1, label: t.steps.experience },
+    { id: 2, label: t.steps.projects },
+    { id: 3, label: t.steps.education },
+    { id: 4, label: t.steps.certifications },
+    { id: 5, label: t.steps.skills },
+    { id: 6, label: t.steps.preview },
   ];
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -35,65 +34,43 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: 'executive', name: 'Executive' },
   ];
 
-  // Auto-scroll stepper to active element
-  useEffect(() => {
-    if (stepperRef.current) {
-      const activeBtn = stepperRef.current.querySelector('[data-active="true"]');
-      if (activeBtn) {
-        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentStep]);
-
   const handlePdfExport = () => {
     const element = document.getElementById('resume-preview');
-    if (!element) {
-      console.error('Resume preview element not found');
-      return;
-    }
+    if (!element) return;
 
     // 1. Set a nice filename for the print job
     const originalTitle = document.title;
     const safeName = resume.personalInfo.fullName.replace(/[^a-z0-9]/gi, '_').substring(0, 20);
     document.title = safeName ? `Resume_${safeName}` : 'Resume';
 
-    // 2. Calculate Scaling to fit A4 perfectly
-    const a4HeightPx = 1122; // A4 height at 96 DPI
+    // 2. Calculate Scaling
+    // A4 height in pixels (96 DPI) is approx 1123px.
+    // We want to fit content to 1 page if possible, or scale comfortably.
+    const a4HeightPx = 1122; 
     
-    // Reset scale and force reflow
+    // Reset to measure true height
     document.documentElement.style.setProperty('--print-scale', '1');
-    void element.offsetHeight; // Force reflow
-    
     const contentHeight = element.scrollHeight;
-    console.log('Content height:', contentHeight, 'A4 height:', a4HeightPx);
     
     let scale = 1;
-    // If content is larger than 1 page, scale it down to fit
+    // If content is slightly larger than 1 page, scale it down to fit.
+    // If it's huge (multi-page), we might let it flow or scale to 1 page depending on preference.
+    // Here we try to fit single page if it's close.
     if (contentHeight > a4HeightPx) {
-       scale = (a4HeightPx - 40) / contentHeight;
-       scale = Math.max(scale, 0.55); 
+       // Add a buffer so it doesn't clip edges
+       scale = (a4HeightPx - 20) / contentHeight;
+       // Don't scale down ridiculously small
+       scale = Math.max(scale, 0.6); 
     }
-    
-    console.log('Applying scale:', scale);
 
     // 3. Set CSS Variable for @media print
     document.documentElement.style.setProperty('--print-scale', scale.toString());
 
-    // 4. Ensure element is visible and ready
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // Double RAF to ensure styles are applied
-        console.log('Triggering print dialog');
-        window.print();
-        
-        // 5. Cleanup after print dialog closes
-        setTimeout(() => {
-          document.title = originalTitle;
-          console.log('Print cleanup complete');
-        }, 500);
-      });
-    });
+    // 4. Print (Browser generates Vector PDF)
+    window.print();
+
+    // 5. Cleanup
+    document.title = originalTitle;
   };
 
   const handleLatexExport = () => {
@@ -107,160 +84,127 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   };
 
   const maxStep = 6;
-  const isPreview = currentStep === maxStep;
 
   return (
-    <div className="flex flex-col w-full min-h-[calc(100vh-80px)]">
-      {/* 1. HORIZONTAL STEPPER (Sticky) */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm no-print">
-        <div className="max-w-7xl mx-auto">
-          <div
-            ref={stepperRef}
-            className="flex items-center gap-2 overflow-x-auto px-4 py-3 scrollbar-hide snap-x"
-          >
-            {steps.map((step) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => setStep(step.id)}
-                  data-active={isActive}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap snap-start border shrink-0 ${
-                    isActive
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-100 ring-offset-1'
-                      : isCompleted
-                      ? 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100'
-                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  {isCompleted ? <CheckCircle2 size={16} /> : <Icon size={16} />}
-                  <span>{step.label}</span>
-                </button>
-              );
-            })}
+    <div className="flex flex-col md:flex-row gap-6 w-full">
+      {/* Left Side: Editor (Hidden in Print, Visible in Steps 0-5) */}
+      <div className={`w-full md:w-1/3 flex flex-col gap-6 no-print ${currentStep === maxStep ? 'hidden md:flex' : ''}`}>
+        
+        {/* Progress Steps */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border">
+          <div className="flex flex-col gap-2">
+            {steps.map((step) => (
+              <button
+                key={step.id}
+                onClick={() => setStep(step.id)}
+                className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  currentStep === step.id
+                    ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span>{step.label}</span>
+                {currentStep === step.id && <ChevronRight size={16} />}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* 2. MAIN CONTENT AREA */}
-      <div className="flex-grow bg-slate-50/50">
-        <div className="max-w-4xl mx-auto w-full p-4 md:p-8 pb-32">
-          {/* Editor Mode */}
-          {!isPreview && (
-            <div className="max-w-2xl mx-auto">
-              <Editor t={t} />
-              
-              {/* Ad Placeholder (Editor) */}
-              {SHOW_ADS && (
-                <div className="mt-8">
-                  <AdSpace className="h-24" label="Ad Space" />
-                </div>
-              )}
-            </div>
-          )}
+        {/* Ad Placeholder 1 - Sidebar */}
+        <AdSpace className="h-32" label="Ad Space (Sidebar)" />
 
-          {/* Preview Mode */}
-          {isPreview && (
-            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Template Selector & Downloads */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 no-print">
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <Download size={20} className="text-blue-600"/>
-                    Actions
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button
-                      onClick={handlePdfExport}
-                      className="flex justify-center items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-                      title="Save as PDF using browser dialog"
-                    >
-                      <Printer size={18} /> PDF
-                    </button>
-                    <button
-                      onClick={handleDocxExport}
-                      className="flex justify-center items-center gap-2 px-4 py-3 bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]"
-                    >
-                      <FileText size={18} /> Word
-                    </button>
-                    <button
-                      onClick={handleLatexExport}
-                      className="flex justify-center items-center gap-2 px-4 py-3 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]"
-                    >
-                      <Code size={18} /> LaTeX
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-slate-100">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-                    {t.actions.changeTemplate}
-                  </h3>
-                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                    {templates.map(tmpl => (
-                      <button
-                        key={tmpl.id}
-                        onClick={() => setTemplateId(tmpl.id)}
-                        className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap border ${
-                          resume.templateId === tmpl.id
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
-                        }`}
-                      >
-                        {tmpl.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* The Resume Preview */}
-              <div className="overflow-x-auto md:overflow-visible pb-10 print:pb-0">
-                <div className="min-w-[210mm] md:min-w-0 origin-top-left md:origin-top transform md:scale-100 scale-[0.85] md:w-auto">
-                  <Preview t={t} />
-                </div>
-              </div>
-
-              {/* Ad Placeholder (Bottom) */}
-              {SHOW_ADS && (
-                <AdSpace className="h-24 mb-4" label="Ad Space (Bottom Banner)" />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 3. STICKY FOOTER NAVIGATION (Fixed at bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] no-print">
-        <div className="max-w-4xl mx-auto flex justify-between gap-4">
-          <button
-            disabled={currentStep === 0}
-            onClick={() => setStep(Math.max(0, currentStep - 1))}
-            className="flex-1 max-w-[120px] flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 bg-white text-slate-700 rounded-xl font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-          >
-            <ChevronLeft size={20} />
-            <span className="hidden sm:inline">{t.actions.back}</span>
-          </button>
-
-          {/* Dynamic Next Button */}
-          {isPreview ? (
+        {/* Navigation Controls */}
+          <div className="flex justify-between gap-4 mt-auto">
             <button
-              onClick={() => setStep(0)}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98]"
+              disabled={currentStep === 0}
+              onClick={() => setStep(Math.max(0, currentStep - 1))}
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="truncate">Edit Info</span>
+              <ChevronLeft size={16} /> {t.actions.back}
             </button>
-          ) : (
             <button
               onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800"
             >
-              {t.actions.next}
-              <ChevronRight size={20} />
+              {currentStep === maxStep ? t.nav.preview : t.actions.next} <ChevronRight size={16} />
             </button>
-          )}
+          </div>
+      </div>
+
+      {/* Center/Right: Content Area */}
+      <div className="flex-1 flex flex-col gap-6">
+        
+        {/* Editor Form View */}
+        {currentStep < maxStep && (
+            <div className="bg-white rounded-xl shadow-sm border p-6 min-h-[500px] flex flex-col">
+              <Editor t={t} />
+              
+              {/* Ad Placeholder 2 (Inside Form Flow) */}
+              {SHOW_ADS && (
+                <div className="mt-8 pt-8 border-t border-dashed border-gray-200">
+                   <AdSpace className="h-20" label="Ad Space (In-Flow)" />
+                </div>
+              )}
+            </div>
+        )}
+
+        {/* Preview View */}
+        <div className={`${currentStep === maxStep ? 'block' : 'hidden md:block'} flex-col gap-4`}>
+            
+            {/* Prominent Action Bar */}
+            <div className="bg-white border-b border-gray-200 p-5 mb-2 rounded-xl shadow-md no-print sticky top-[4.5rem] z-30 transition-all">
+              <div className="flex flex-col gap-5">
+                 
+                 {/* Row 1: Download Actions (Primary) */}
+                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                       <Download size={24} className="text-blue-600"/> 
+                       Download Resume
+                    </h3>
+                    <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                        <button onClick={handlePdfExport} className="flex-1 md:flex-none justify-center items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5" title="Save as PDF using browser dialog">
+                           <Printer size={18} /> {t.actions.downloadPdf}
+                        </button>
+                        <button onClick={handleDocxExport} className="flex-1 md:flex-none justify-center items-center gap-2 px-4 py-3 bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 rounded-lg font-bold shadow-sm transition-all">
+                           <FileText size={18} /> Word
+                        </button>
+                        <button onClick={handleLatexExport} className="flex-1 md:flex-none justify-center items-center gap-2 px-4 py-3 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-lg font-bold shadow-sm transition-all">
+                           <Code size={18} /> LaTeX
+                        </button>
+                    </div>
+                 </div>
+
+                 {/* Row 2: Template Selection (Secondary) */}
+                 <div className="flex flex-col md:flex-row items-start md:items-center gap-3 pt-4 border-t border-gray-100">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                       {t.actions.changeTemplate}:
+                    </span>
+                    <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 scrollbar-hide">
+                      {templates.map(tmpl => (
+                         <button
+                          key={tmpl.id}
+                          onClick={() => setTemplateId(tmpl.id)}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                            resume.templateId === tmpl.id 
+                            ? 'bg-slate-800 text-white shadow-md ring-2 ring-slate-800 ring-offset-2' 
+                            : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                          }`}
+                         >
+                           {tmpl.name}
+                         </button>
+                       ))}
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* The Resume Paper */}
+            <div className="overflow-auto pb-10 print:pb-0">
+              <Preview t={t} />
+            </div>
+            
+            {/* Ad Placeholder 3 (Bottom) */}
+            <AdSpace className="h-24 mb-4" label="Ad Space (Bottom Banner)" />
         </div>
       </div>
     </div>
