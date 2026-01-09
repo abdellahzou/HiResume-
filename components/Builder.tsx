@@ -18,9 +18,11 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const steps = [
     { id: 0, label: t.steps.personal },
     { id: 1, label: t.steps.experience },
-    { id: 2, label: t.steps.education },
-    { id: 3, label: t.steps.skills },
-    { id: 4, label: t.steps.preview },
+    { id: 2, label: t.steps.projects },
+    { id: 3, label: t.steps.education },
+    { id: 4, label: t.steps.certifications },
+    { id: 5, label: t.steps.skills },
+    { id: 6, label: t.steps.preview },
   ];
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -64,10 +66,12 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     downloadFile(blob, 'resume.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   };
 
+  const maxStep = 6;
+
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full">
-      {/* Left Side: Editor (Hidden in Print, Visible in Steps 0-3) */}
-      <div className={`w-full md:w-1/3 flex flex-col gap-6 no-print ${currentStep === 4 ? 'hidden md:flex' : ''}`}>
+      {/* Left Side: Editor (Hidden in Print, Visible in Steps 0-5) */}
+      <div className={`w-full md:w-1/3 flex flex-col gap-6 no-print ${currentStep === maxStep ? 'hidden md:flex' : ''}`}>
         
         {/* Progress Steps */}
         <div className="bg-white p-4 rounded-xl shadow-sm border">
@@ -102,10 +106,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               <ChevronLeft size={16} /> {t.actions.back}
             </button>
             <button
-              onClick={() => setStep(Math.min(4, currentStep + 1))}
+              onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
               className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800"
             >
-              {currentStep === 4 ? t.nav.preview : t.actions.next} <ChevronRight size={16} />
+              {currentStep === maxStep ? t.nav.preview : t.actions.next} <ChevronRight size={16} />
             </button>
           </div>
       </div>
@@ -114,7 +118,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
       <div className="flex-1 flex flex-col gap-6">
         
         {/* Editor Form View */}
-        {currentStep < 4 && (
+        {currentStep < maxStep && (
             <div className="bg-white rounded-xl shadow-sm border p-6 min-h-[500px] flex flex-col">
               <Editor t={t} />
               
@@ -128,7 +132,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         )}
 
         {/* Preview View */}
-        <div className={`${currentStep === 4 ? 'block' : 'hidden md:block'} flex-col gap-4`}>
+        <div className={`${currentStep === maxStep ? 'block' : 'hidden md:block'} flex-col gap-4`}>
             {/* Toolbar for Preview */}
             <div className="bg-slate-800 text-white p-3 rounded-lg shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between no-print sticky top-20 z-40">
               <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">

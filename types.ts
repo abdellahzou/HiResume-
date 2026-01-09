@@ -20,6 +20,20 @@ export interface Experience {
   description: string;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  link: string;
+  description: string;
+}
+
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+}
+
 export interface Education {
   id: string;
   school: string;
@@ -40,7 +54,9 @@ export type TemplateId = 'modern' | 'classic' | 'minimal' | 'professional' | 'cr
 export interface ResumeData {
   personalInfo: PersonalInfo;
   experience: Experience[];
+  projects: Project[];
   education: Education[];
+  certifications: Certification[];
   skills: Skill[];
   templateId: TemplateId;
 }
@@ -48,7 +64,7 @@ export interface ResumeData {
 export interface Translation {
   metaTitle: string;
   metaDesc: string;
-  metaKeywords: string; // Added for SEO
+  metaKeywords: string;
   nav: {
     brand: string;
     create: string;
@@ -100,7 +116,9 @@ export interface Translation {
   steps: {
     personal: string;
     experience: string;
+    projects: string;
     education: string;
+    certifications: string;
     skills: string;
     preview: string;
   };
@@ -132,6 +150,10 @@ export interface Translation {
     present: string;
     description: string;
     skillName: string;
+    projectName: string;
+    projectLink: string;
+    certificationName: string;
+    certificationIssuer: string;
   };
   placeholders: {
     summary: string;
@@ -139,7 +161,9 @@ export interface Translation {
   };
   headings: {
     experience: string;
+    projects: string;
     education: string;
+    certifications: string;
     skills: string;
     contact: string;
   };

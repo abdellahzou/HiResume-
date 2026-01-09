@@ -3,7 +3,7 @@ import { ResumeData, Translation, Language } from './types';
 // GLOBAL AD CONFIGURATION
 // Set to 'true' to show ad placeholders.
 // Set to 'false' to hide all ad spaces and collapse their layout containers.
-export const SHOW_ADS = false;
+export const SHOW_ADS = true;
 
 export const INITIAL_RESUME_STATE: ResumeData = {
   templateId: 'modern',
@@ -17,7 +17,9 @@ export const INITIAL_RESUME_STATE: ResumeData = {
     title: '',
   },
   experience: [],
+  projects: [],
   education: [],
+  certifications: [],
   skills: [],
 };
 
@@ -99,7 +101,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     steps: {
       personal: 'Personal Info',
       experience: 'Experience',
+      projects: 'Projects',
       education: 'Education',
+      certifications: 'Certifications',
       skills: 'Skills',
       preview: 'Preview',
     },
@@ -131,6 +135,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       present: 'Present',
       description: 'Description',
       skillName: 'Skill',
+      projectName: 'Project Name',
+      projectLink: 'Project Link (Optional)',
+      certificationName: 'Certification Name',
+      certificationIssuer: 'Issuing Organization',
     },
     placeholders: {
       summary: 'Experienced professional with a proven track record in...',
@@ -138,7 +146,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     },
     headings: {
       experience: 'Work Experience',
+      projects: 'Projects',
       education: 'Education',
+      certifications: 'Certifications & Awards',
       skills: 'Skills',
       contact: 'Contact',
     },
@@ -220,7 +230,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     steps: {
       personal: 'Infos Personnelles',
       experience: 'Expérience',
+      projects: 'Projets',
       education: 'Formation',
+      certifications: 'Certifications',
       skills: 'Compétences',
       preview: 'Aperçu',
     },
@@ -252,6 +264,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       present: 'Aujourd\'hui',
       description: 'Description',
       skillName: 'Compétence',
+      projectName: 'Nom du Projet',
+      projectLink: 'Lien (Optionnel)',
+      certificationName: 'Nom de la Certification',
+      certificationIssuer: 'Organisation',
     },
     placeholders: {
       summary: 'Professionnel expérimenté avec un historique prouvé dans...',
@@ -259,7 +275,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     },
     headings: {
       experience: 'Expérience Professionnelle',
+      projects: 'Projets',
       education: 'Formation',
+      certifications: 'Certifications & Prix',
       skills: 'Compétences',
       contact: 'Contact',
     },
@@ -341,7 +359,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     steps: {
       personal: 'Info Personal',
       experience: 'Experiencia',
+      projects: 'Proyectos',
       education: 'Educación',
+      certifications: 'Certificaciones',
       skills: 'Habilidades',
       preview: 'Vista Previa',
     },
@@ -373,6 +393,10 @@ export const TRANSLATIONS: Record<Language, Translation> = {
       present: 'Actualidad',
       description: 'Descripción',
       skillName: 'Habilidad',
+      projectName: 'Nombre del Proyecto',
+      projectLink: 'Enlace (Opcional)',
+      certificationName: 'Nombre de la Certificación',
+      certificationIssuer: 'Organización Emisora',
     },
     placeholders: {
       summary: 'Profesional experimentado con historial probado en...',
@@ -380,7 +404,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     },
     headings: {
       experience: 'Experiencia Profesional',
+      projects: 'Proyectos',
       education: 'Educación',
+      certifications: 'Certificaciones y Premios',
       skills: 'Habilidades',
       contact: 'Contacto',
     },

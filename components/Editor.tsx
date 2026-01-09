@@ -16,14 +16,21 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     addExperience,
     updateExperience,
     removeExperience,
+    addProject,
+    updateProject,
+    removeProject,
     addEducation,
     updateEducation,
     removeEducation,
+    addCertification,
+    updateCertification,
+    removeCertification,
     addSkill,
     updateSkill,
     removeSkill,
   } = useResumeStore();
 
+  // Step 0: Personal Info
   if (currentStep === 0) {
     return (
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -80,6 +87,7 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     );
   }
 
+  // Step 1: Experience
   if (currentStep === 1) {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -158,7 +166,54 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     );
   }
 
+  // Step 2: Projects
   if (currentStep === 2) {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">{t.steps.projects}</h2>
+          <button
+            onClick={addProject}
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <Plus size={16} /> {t.actions.add}
+          </button>
+        </div>
+        {resume.projects.map((proj) => (
+          <div key={proj.id} className="p-4 border rounded-lg bg-white shadow-sm space-y-3 relative">
+            <button
+              onClick={() => removeProject(proj.id)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+            >
+              <Trash2 size={18} />
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+              <Input
+                label={t.labels.projectName}
+                value={proj.name}
+                onChange={(e) => updateProject(proj.id, { name: e.target.value })}
+              />
+              <Input
+                label={t.labels.projectLink}
+                value={proj.link}
+                onChange={(e) => updateProject(proj.id, { link: e.target.value })}
+              />
+              <div className="md:col-span-2">
+                <TextArea
+                  label={t.labels.description}
+                  value={proj.description}
+                  onChange={(e) => updateProject(proj.id, { description: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Step 3: Education
+  if (currentStep === 3) {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex justify-between items-center">
@@ -208,7 +263,53 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     );
   }
 
-  if (currentStep === 3) {
+  // Step 4: Certifications
+  if (currentStep === 4) {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">{t.steps.certifications}</h2>
+          <button
+            onClick={addCertification}
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <Plus size={16} /> {t.actions.add}
+          </button>
+        </div>
+        {resume.certifications.map((cert) => (
+          <div key={cert.id} className="p-4 border rounded-lg bg-white shadow-sm space-y-3 relative">
+            <button
+              onClick={() => removeCertification(cert.id)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+            >
+              <Trash2 size={18} />
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+              <Input
+                label={t.labels.certificationName}
+                value={cert.name}
+                onChange={(e) => updateCertification(cert.id, { name: e.target.value })}
+              />
+              <Input
+                label={t.labels.certificationIssuer}
+                value={cert.issuer}
+                onChange={(e) => updateCertification(cert.id, { issuer: e.target.value })}
+              />
+              <Input
+                label={t.labels.startDate} // Reusing label for general date
+                type="month"
+                value={cert.date}
+                onChange={(e) => updateCertification(cert.id, { date: e.target.value })}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Step 5: Skills
+  if (currentStep === 5) {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex justify-between items-center">

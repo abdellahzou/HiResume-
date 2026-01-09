@@ -2,7 +2,7 @@ import React from 'react';
 import { useResumeStore } from '../store';
 import { Translation, ResumeData } from '../types';
 import clsx from 'clsx';
-import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award, FolderGit2 } from 'lucide-react';
 
 interface PreviewProps {
   t: Translation;
@@ -68,6 +68,23 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
       </section>
     )}
 
+    {resume.projects.length > 0 && (
+      <section className="mb-8">
+        <SectionHeader title={t.headings.projects} className="border-b border-gray-300 pb-1" />
+        <div className="space-y-4">
+          {resume.projects.map((proj) => (
+            <div key={proj.id}>
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-bold text-base text-slate-900">{proj.name}</h3>
+                {proj.link && <span className="text-xs text-blue-600 underline">{proj.link}</span>}
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">{proj.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
     {resume.education.length > 0 && (
       <section className="mb-8">
         <SectionHeader title={t.headings.education} className="border-b border-gray-300 pb-1" />
@@ -81,6 +98,23 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
                 </span>
               </div>
               <div className="text-sm text-slate-700">{edu.degree}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {resume.certifications.length > 0 && (
+      <section className="mb-8">
+        <SectionHeader title={t.headings.certifications} className="border-b border-gray-300 pb-1" />
+        <div className="space-y-2">
+          {resume.certifications.map((cert) => (
+            <div key={cert.id} className="flex justify-between items-baseline text-sm">
+              <div>
+                <span className="font-bold text-slate-900">{cert.name}</span>
+                {cert.issuer && <span className="text-slate-600"> - {cert.issuer}</span>}
+              </div>
+              <span className="text-xs text-slate-500">{cert.date}</span>
             </div>
           ))}
         </div>
@@ -141,6 +175,23 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </section>
     )}
 
+    {resume.projects.length > 0 && (
+      <section className="mb-6">
+         <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1">{t.headings.projects}</h2>
+        <div className="space-y-4">
+          {resume.projects.map((proj) => (
+            <div key={proj.id}>
+              <div className="flex justify-between font-bold text-sm">
+                <span>{proj.name}</span>
+                {proj.link && <span className="font-normal italic">{proj.link}</span>}
+              </div>
+              <p className="text-sm mt-1 whitespace-pre-line">{proj.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
     {resume.education.length > 0 && (
       <section className="mb-6">
         <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1">{t.headings.education}</h2>
@@ -151,6 +202,20 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
                 <span className="font-bold">{edu.school}</span>, {edu.degree}
               </div>
               <span className="italic">{edu.startDate} – {edu.current ? t.labels.present : edu.endDate}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {resume.certifications.length > 0 && (
+      <section className="mb-6">
+        <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1">{t.headings.certifications}</h2>
+        <div className="space-y-2">
+          {resume.certifications.map((cert) => (
+            <div key={cert.id} className="flex justify-between text-sm">
+              <div><span className="font-bold">{cert.name}</span>{cert.issuer && `, ${cert.issuer}`}</div>
+              <span className="italic">{cert.date}</span>
             </div>
           ))}
         </div>
@@ -199,6 +264,22 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
             </div>
           </section>
         )}
+        
+        {resume.certifications.length > 0 && (
+          <section>
+            <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">{t.headings.certifications}</h3>
+            <div className="space-y-4">
+              {resume.certifications.map((cert) => (
+                <div key={cert.id}>
+                  <div className="font-medium text-sm">{cert.name}</div>
+                  <div className="text-xs text-gray-500">{cert.issuer}</div>
+                  <div className="text-xs text-gray-400 mt-1">{cert.date}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
          {resume.skills.length > 0 && (
           <section>
             <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">{t.headings.skills}</h3>
@@ -231,6 +312,22 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
                   <h4 className="font-bold text-gray-900">{exp.position}</h4>
                   <div className="text-sm text-gray-500 mb-2">{exp.company} | {exp.startDate} - {exp.current ? t.labels.present : exp.endDate}</div>
                   <p className="text-sm text-gray-700 whitespace-pre-line">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {resume.projects.length > 0 && (
+          <section>
+            <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-6">{t.headings.projects}</h3>
+            <div className="space-y-6">
+              {resume.projects.map((proj) => (
+                <div key={proj.id} className="relative pl-6 border-l border-gray-200">
+                   <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-gray-200"></div>
+                   <h4 className="font-bold text-gray-900">{proj.name}</h4>
+                   {proj.link && <div className="text-xs text-blue-500 mb-1">{proj.link}</div>}
+                   <p className="text-sm text-gray-700">{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -281,6 +378,20 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
           </div>
         )}
 
+        {resume.certifications.length > 0 && (
+           <div>
+            <h3 className="font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2 uppercase text-xs">{t.headings.certifications}</h3>
+            <div className="space-y-2 text-slate-700">
+              {resume.certifications.map(cert => (
+                <div key={cert.id}>
+                  <div className="font-medium">{cert.name}</div>
+                  <div className="text-xs text-slate-500">{cert.issuer} • {cert.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {resume.skills.length > 0 && (
            <div>
             <h3 className="font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2 uppercase text-xs">{t.headings.skills}</h3>
@@ -304,7 +415,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
        )}
 
        {resume.experience.length > 0 && (
-         <div>
+         <div className="mb-8">
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4">{t.headings.experience}</h3>
             <div className="space-y-6">
               {resume.experience.map(exp => (
@@ -317,6 +428,21 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
                    </div>
                    <div className="text-sm font-medium text-slate-600 mb-2">{exp.company}</div>
                    <p className="text-sm text-slate-700 whitespace-pre-line">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+         </div>
+       )}
+
+       {resume.projects.length > 0 && (
+         <div>
+            <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4">{t.headings.projects}</h3>
+            <div className="space-y-4">
+              {resume.projects.map(proj => (
+                <div key={proj.id}>
+                   <h4 className="font-bold text-slate-900 text-md">{proj.name}</h4>
+                   {proj.link && <a href={proj.link} className="text-xs text-blue-600 block mb-1">{proj.link}</a>}
+                   <p className="text-sm text-slate-700">{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -349,21 +475,45 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
 
         <div className="grid grid-cols-3 gap-10">
            <div className="col-span-2 space-y-8">
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center"><Briefcase size={18} /></span>
-                {t.headings.experience}
-              </h2>
-              <div className="space-y-8 border-l-2 border-slate-100 pl-8 ml-4">
-                 {resume.experience.map(exp => (
-                   <div key={exp.id} className="relative">
-                      <div className="absolute -left-[39px] top-1 w-4 h-4 rounded-full border-2 border-white bg-blue-500 shadow-sm"></div>
-                      <h3 className="font-bold text-lg">{exp.position}</h3>
-                      <div className="text-blue-600 font-medium mb-1">{exp.company}</div>
-                      <div className="text-xs text-slate-400 uppercase tracking-widest mb-3">{exp.startDate} — {exp.current ? t.labels.present : exp.endDate}</div>
-                      <p className="text-slate-600 whitespace-pre-line">{exp.description}</p>
-                   </div>
-                 ))}
-              </div>
+              {resume.experience.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6">
+                    <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center"><Briefcase size={18} /></span>
+                    {t.headings.experience}
+                  </h2>
+                  <div className="space-y-8 border-l-2 border-slate-100 pl-8 ml-4">
+                     {resume.experience.map(exp => (
+                       <div key={exp.id} className="relative">
+                          <div className="absolute -left-[39px] top-1 w-4 h-4 rounded-full border-2 border-white bg-blue-500 shadow-sm"></div>
+                          <h3 className="font-bold text-lg">{exp.position}</h3>
+                          <div className="text-blue-600 font-medium mb-1">{exp.company}</div>
+                          <div className="text-xs text-slate-400 uppercase tracking-widest mb-3">{exp.startDate} — {exp.current ? t.labels.present : exp.endDate}</div>
+                          <p className="text-slate-600 whitespace-pre-line">{exp.description}</p>
+                       </div>
+                     ))}
+                  </div>
+                </div>
+              )}
+
+              {resume.projects.length > 0 && (
+                 <div>
+                  <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6">
+                    <span className="w-8 h-8 bg-orange-100 text-orange-600 rounded flex items-center justify-center"><FolderGit2 size={18} /></span>
+                    {t.headings.projects}
+                  </h2>
+                  <div className="space-y-6 pl-2">
+                     {resume.projects.map(proj => (
+                       <div key={proj.id} className="bg-white border border-slate-100 p-4 rounded-lg shadow-sm">
+                          <div className="flex justify-between items-start">
+                             <h3 className="font-bold text-lg">{proj.name}</h3>
+                             {proj.link && <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">Link</span>}
+                          </div>
+                          <p className="text-slate-600 mt-2">{proj.description}</p>
+                       </div>
+                     ))}
+                  </div>
+                </div>
+              )}
            </div>
 
            <div className="col-span-1 space-y-8">
@@ -400,6 +550,24 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
                    </div>
                 </div>
               )}
+
+              {resume.certifications.length > 0 && (
+                 <div>
+                   <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                     <span className="w-8 h-8 bg-yellow-100 text-yellow-600 rounded flex items-center justify-center"><Award size={18} /></span>
+                     {t.headings.certifications}
+                   </h2>
+                   <div className="space-y-3">
+                     {resume.certifications.map(cert => (
+                       <div key={cert.id} className="border-l-2 border-yellow-400 pl-3">
+                          <div className="font-bold text-sm text-slate-800">{cert.name}</div>
+                          <div className="text-xs text-slate-500">{cert.issuer}</div>
+                          <div className="text-xs text-slate-400">{cert.date}</div>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+              )}
            </div>
         </div>
      </div>
@@ -427,39 +595,77 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
         </div>
      )}
 
-     <div className="mb-10">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">{t.headings.experience}</h2>
-        <div className="space-y-8">
-           {resume.experience.map(exp => (
-             <div key={exp.id} className="grid grid-cols-4 gap-6">
-                <div className="col-span-1 text-right">
-                   <div className="font-bold text-slate-900">{exp.startDate}</div>
-                   <div className="text-sm text-slate-500">{exp.endDate}</div>
-                </div>
-                <div className="col-span-3">
-                   <h3 className="text-xl font-bold text-slate-900 mb-1">{exp.position}</h3>
-                   <div className="text-slate-600 font-medium italic mb-3">{exp.company}</div>
-                   <p className="text-slate-700 leading-relaxed font-sans text-sm">{exp.description}</p>
-                </div>
-             </div>
-           ))}
-        </div>
-     </div>
+     {resume.experience.length > 0 && (
+       <div className="mb-10">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">{t.headings.experience}</h2>
+          <div className="space-y-8">
+             {resume.experience.map(exp => (
+               <div key={exp.id} className="grid grid-cols-4 gap-6">
+                  <div className="col-span-1 text-right">
+                     <div className="font-bold text-slate-900">{exp.startDate}</div>
+                     <div className="text-sm text-slate-500">{exp.endDate}</div>
+                  </div>
+                  <div className="col-span-3">
+                     <h3 className="text-xl font-bold text-slate-900 mb-1">{exp.position}</h3>
+                     <div className="text-slate-600 font-medium italic mb-3">{exp.company}</div>
+                     <p className="text-slate-700 leading-relaxed font-sans text-sm">{exp.description}</p>
+                  </div>
+               </div>
+             ))}
+          </div>
+       </div>
+     )}
+
+     {resume.projects.length > 0 && (
+       <div className="mb-10">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">{t.headings.projects}</h2>
+          <div className="space-y-6">
+             {resume.projects.map(proj => (
+               <div key={proj.id} className="grid grid-cols-4 gap-6">
+                  <div className="col-span-1 text-right">
+                     <div className="text-sm text-slate-500 italic">Project</div>
+                  </div>
+                  <div className="col-span-3">
+                     <h3 className="text-lg font-bold text-slate-900">{proj.name}</h3>
+                     {proj.link && <div className="text-xs text-blue-800 mb-1">{proj.link}</div>}
+                     <p className="text-slate-700 leading-relaxed font-sans text-sm">{proj.description}</p>
+                  </div>
+               </div>
+             ))}
+          </div>
+       </div>
+     )}
 
      <div className="grid grid-cols-2 gap-12">
-        {resume.education.length > 0 && (
-           <div>
-              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t.headings.education}</h2>
-              <div className="space-y-4">
-                 {resume.education.map(edu => (
-                   <div key={edu.id}>
-                      <div className="font-bold text-slate-900 text-lg">{edu.school}</div>
-                      <div className="text-slate-600 italic">{edu.degree}</div>
-                   </div>
-                 ))}
-              </div>
-           </div>
-        )}
+        <div className="space-y-8">
+          {resume.education.length > 0 && (
+             <div>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t.headings.education}</h2>
+                <div className="space-y-4">
+                   {resume.education.map(edu => (
+                     <div key={edu.id}>
+                        <div className="font-bold text-slate-900 text-lg">{edu.school}</div>
+                        <div className="text-slate-600 italic">{edu.degree}</div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+          )}
+          
+          {resume.certifications.length > 0 && (
+             <div>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">{t.headings.certifications}</h2>
+                <div className="space-y-3">
+                   {resume.certifications.map(cert => (
+                     <div key={cert.id}>
+                        <div className="font-bold text-slate-900">{cert.name}</div>
+                        <div className="text-sm text-slate-500">{cert.issuer} • {cert.date}</div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+          )}
+        </div>
         
         {resume.skills.length > 0 && (
            <div>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ResumeData, Experience, Education, Skill, TemplateId } from './types';
+import { ResumeData, Experience, Education, Skill, Project, Certification, TemplateId } from './types';
 import { INITIAL_RESUME_STATE } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,15 +9,27 @@ interface ResumeStore {
   currentStep: number;
   setTemplateId: (id: TemplateId) => void;
   setPersonal: (data: Partial<ResumeData['personalInfo']>) => void;
+  
   addExperience: () => void;
   updateExperience: (id: string, data: Partial<Experience>) => void;
   removeExperience: (id: string) => void;
+  
+  addProject: () => void;
+  updateProject: (id: string, data: Partial<Project>) => void;
+  removeProject: (id: string) => void;
+  
   addEducation: () => void;
   updateEducation: (id: string, data: Partial<Education>) => void;
   removeEducation: (id: string) => void;
+
+  addCertification: () => void;
+  updateCertification: (id: string, data: Partial<Certification>) => void;
+  removeCertification: (id: string) => void;
+  
   addSkill: () => void;
   updateSkill: (id: string, data: Partial<Skill>) => void;
   removeSkill: (id: string) => void;
+  
   setStep: (step: number) => void;
   resetResume: () => void;
 }
@@ -67,6 +79,40 @@ export const useResumeStore = create<ResumeStore>()(
             experience: state.resume.experience.filter((exp) => exp.id !== id),
           },
         })),
+      
+      // Projects
+      addProject: () =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            projects: [
+              ...state.resume.projects,
+              {
+                id: uuidv4(),
+                name: '',
+                link: '',
+                description: '',
+              },
+            ],
+          },
+        })),
+      updateProject: (id, data) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            projects: state.resume.projects.map((proj) =>
+              proj.id === id ? { ...proj, ...data } : proj
+            ),
+          },
+        })),
+      removeProject: (id) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            projects: state.resume.projects.filter((proj) => proj.id !== id),
+          },
+        })),
+
       addEducation: () =>
         set((state) => ({
           resume: {
@@ -100,6 +146,40 @@ export const useResumeStore = create<ResumeStore>()(
             education: state.resume.education.filter((edu) => edu.id !== id),
           },
         })),
+
+      // Certifications
+      addCertification: () =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            certifications: [
+              ...state.resume.certifications,
+              {
+                id: uuidv4(),
+                name: '',
+                issuer: '',
+                date: '',
+              },
+            ],
+          },
+        })),
+      updateCertification: (id, data) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            certifications: state.resume.certifications.map((cert) =>
+              cert.id === id ? { ...cert, ...data } : cert
+            ),
+          },
+        })),
+      removeCertification: (id) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            certifications: state.resume.certifications.filter((cert) => cert.id !== id),
+          },
+        })),
+
       addSkill: () =>
         set((state) => ({
           resume: {
