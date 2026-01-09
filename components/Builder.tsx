@@ -60,6 +60,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     
     // Reset to measure true height
     document.documentElement.style.setProperty('--print-scale', '1');
+    
+    // Force a reflow to get accurate measurements
+    element.offsetHeight;
+    
     const contentHeight = element.scrollHeight;
     
     let scale = 1;
@@ -74,11 +78,15 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     // 3. Set CSS Variable for @media print
     document.documentElement.style.setProperty('--print-scale', scale.toString());
 
-    // 4. Print (Browser generates Vector PDF)
-    window.print();
-
-    // 5. Cleanup
-    document.title = originalTitle;
+    // 4. Wait for the scale to apply, then print
+    setTimeout(() => {
+      window.print();
+      
+      // 5. Cleanup after print dialog closes
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 100);
+    }, 100);
   };
 
   const handleLatexExport = () => {
