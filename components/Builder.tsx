@@ -48,7 +48,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   const handlePdfExport = () => {
     const element = document.getElementById('resume-preview');
-    if (!element) return;
+    if (!element) {
+      console.error('Resume preview element not found');
+      return;
+    }
 
     // 1. Set a nice filename for the print job
     const originalTitle = document.title;
@@ -58,35 +61,39 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     // 2. Calculate Scaling to fit A4 perfectly
     const a4HeightPx = 1122; // A4 height at 96 DPI
     
-    // Reset to measure true height
+    // Reset scale and force reflow
     document.documentElement.style.setProperty('--print-scale', '1');
-    
-    // Force a reflow to get accurate measurements
-    element.offsetHeight;
+    void element.offsetHeight; // Force reflow
     
     const contentHeight = element.scrollHeight;
+    console.log('Content height:', contentHeight, 'A4 height:', a4HeightPx);
     
     let scale = 1;
     // If content is larger than 1 page, scale it down to fit
     if (contentHeight > a4HeightPx) {
-       // Add a small buffer so it doesn't clip edges
        scale = (a4HeightPx - 40) / contentHeight;
-       // Don't scale down too small
        scale = Math.max(scale, 0.55); 
     }
+    
+    console.log('Applying scale:', scale);
 
     // 3. Set CSS Variable for @media print
     document.documentElement.style.setProperty('--print-scale', scale.toString());
 
-    // 4. Wait for the scale to apply, then print
-    setTimeout(() => {
-      window.print();
-      
-      // 5. Cleanup after print dialog closes
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 100);
-    }, 100);
+    // 4. Ensure element is visible and ready
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Double RAF to ensure styles are applied
+        console.log('Triggering print dialog');
+        window.print();
+        
+        // 5. Cleanup after print dialog closes
+        setTimeout(() => {
+          document.title = originalTitle;
+          console.log('Print cleanup complete');
+        }, 500);
+      });
+    });
   };
 
   const handleLatexExport = () => {
