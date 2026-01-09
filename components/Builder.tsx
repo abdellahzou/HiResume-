@@ -57,8 +57,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     // If it's huge (multi-page), we might let it flow or scale to 1 page depending on preference.
     // Here we try to fit single page if it's close.
     if (contentHeight > a4HeightPx) {
-       // Add a buffer so it doesn't clip edges
-       scale = (a4HeightPx - 5) / contentHeight;
+       // Add a buffer so it clip clip edges
+       scale = (a4HeightPx - 50) / contentHeight;
        // Don't scale down ridiculously small
        scale = Math.max(scale, 0.6); 
     }
