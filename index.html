@@ -54,7 +54,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       @media print {
         @page {
           margin: 0;
-          size: auto; 
+          size: A4; 
         }
 
         body {
@@ -76,7 +76,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         #resume-preview {
-          position: absolute;
+          position: relative;
           left: 0;
           top: 0;
           margin: 0 !important;
@@ -86,11 +86,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           
           /* Force standard A4 dimensions */
           width: 210mm;
-          min-height: 297mm;
-          overflow: hidden;
+          min-height: unset;
+  height: 297mm;
+    overflow: hidden;
 
           /* Apply dynamic scaling calculated in Builder.tsx */
-          transform: scale(var(--print-scale, 1));
+          
           
         }
       }
