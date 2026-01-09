@@ -39,6 +39,58 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: 'executive', name: 'Executive' },
   ];
 
+  // Inject print styles
+  useEffect(() => {
+    const styleId = 'resume-print-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          
+          body * {
+            visibility: hidden;
+          }
+          
+          #resume-preview,
+          #resume-preview * {
+            visibility: visible;
+          }
+          
+          #resume-preview {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            max-height: 297mm !important;
+            padding: 10mm !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            overflow: hidden !important;
+            background: white !important;
+          }
+          
+          #resume-preview * {
+            page-break-inside: avoid !important;
+          }
+          
+          .no-print {
+            display: none !important;
+            visibility: hidden !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   // Auto-scroll stepper to active element
   useEffect(() => {
     if (stepperRef.current) {
@@ -50,81 +102,14 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
-  const handlePdfExport = async () => {
-    const element = document.getElementById('resume-preview');
-    if (!element) return;
-
+  const handlePdfExport = () => {
     setIsGeneratingPdf(true);
-
-    // @ts-ignore
-    if (typeof html2pdf === 'undefined') {
-      console.warn('html2pdf not loaded');
+    
+    // Small delay to show loading state
+    setTimeout(() => {
       window.print();
       setIsGeneratingPdf(false);
-      return;
-    }
-
-    try {
-      // Clone the element to avoid modifying the original
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = '210mm';
-      clone.style.minHeight = 'auto';
-      clone.style.maxHeight = '297mm';
-      clone.style.padding = '10mm';
-      clone.style.boxSizing = 'border-box';
-      clone.style.overflow = 'hidden';
-      
-      // Adjust font sizes if content is too large
-      const allText = clone.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, li');
-      allText.forEach((el: any) => {
-        const currentSize = window.getComputedStyle(el).fontSize;
-        const size = parseFloat(currentSize);
-        if (size > 16) {
-          el.style.fontSize = '14px';
-        } else if (size > 12) {
-          el.style.fontSize = '11px';
-        }
-      });
-
-      // Temporarily add clone to document (hidden)
-      clone.style.position = 'fixed';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      document.body.appendChild(clone);
-
-      const opt = {
-        margin: 0,
-        filename: 'resume.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          scrollX: 0
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: { mode: 'avoid-all' }
-      };
-
-      // @ts-ignore
-      await html2pdf().set(opt).from(clone).save();
-
-      // Remove clone
-      document.body.removeChild(clone);
-
-    } catch (error) {
-      console.error('PDF Export failed:', error);
-      alert('PDF generation failed. Opening print dialog instead.');
-      window.print();
-    } finally {
-      setIsGeneratingPdf(false);
-    }
+    }, 100);
   };
 
   const handleLatexExport = () => {
@@ -212,6 +197,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                       onClick={handlePdfExport}
                       disabled={isGeneratingPdf}
                       className="flex justify-center items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+                      title="Print to PDF - Choose 'Save as PDF' in the print dialog"
                     >
                       {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Printer size={18} />} PDF
                     </button>
@@ -222,6 +208,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                       <Code size={18} /> LaTeX
                     </button>
                   </div>
+                  <p className="text-xs text-slate-500 mt-3 flex items-start gap-2">
+                    <span className="text-blue-600 font-bold">💡 Tip:</span>
+                    <span>Click PDF button, then select "Save as PDF" in the print dialog for best ATS compatibility</span>
+                  </p>
                 </div>
 
                 <div className="pt-6 border-t border-slate-100">
@@ -253,7 +243,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 </div>
               </div>
 
-              <AdSpace className="h-24 mb-4" label="Ad Space (Bottom Banner)" />
+              <AdSpace className="h-24 mb-4 no-print" label="Ad Space (Bottom Banner)" />
             </div>
           )}
         </div>
