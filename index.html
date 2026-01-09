@@ -34,68 +34,125 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <!-- Mammoth.js for DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-      
-      body {
-        font-family: 'Inter', sans-serif;
-      }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-      /* Screen Preview Styles */
-      .a4-page {
-        width: 210mm;
-        min-height: 297mm;
-        background: white;
-        margin: 0 auto;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transform-origin: top center;
-      }
+/* =========================
+   BASE
+========================= */
 
-      /* Print / PDF Generation Styles */
-      @media print {
-        @page {
-          margin: 0;
-          size: A4; 
-        }
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: #f9fafb;
+}
 
-        body {
-          margin: 0;
-          padding: 0;
-          background: white;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
+/* =========================
+   SCREEN PREVIEW (UI ONLY)
+========================= */
 
-        /* Hide everything by default */
-        body * {
-          visibility: hidden;
-        }
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: #ffffff;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
 
-        /* Only show the resume preview */
-        #resume-preview, #resume-preview * {
-          visibility: visible;
-        }
+/* =========================
+   PRINT / PDF
+========================= */
 
-        #resume-preview {
-          position: relative;
-          left: 0;
-          top: 0;
-          margin: 0 !important;
-          padding: 0 !important;
-          border: none !important;
-          box-shadow: none !important;
-          
-          /* Force standard A4 dimensions */
-          width: 210mm;
-          min-height: unset;
-  height: 297mm;
-    overflow: hidden;
+@media print {
 
-          /* Apply dynamic scaling calculated in Builder.tsx */
-          
-          
-        }
-      }
-    </style>
+  /* --- Page Setup --- */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html, body {
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* --- Hide everything --- */
+  body * {
+    visibility: hidden;
+  }
+
+  /* --- Show only resume --- */
+  #resume-preview,
+  #resume-preview * {
+    visibility: visible;
+  }
+
+  /* --- Resume container --- */
+  #resume-preview {
+    position: relative;
+    width: 210mm;
+    height: auto;
+    min-height: unset;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  /* =========================
+     CRITICAL FIXES
+  ========================= */
+
+  /* 1. Remove top margins at page start */
+  h1, h2, h3, h4, h5, h6,
+  section,
+  article,
+  .section,
+  .resume-section {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* 2. Normalize margins everywhere */
+  p, ul, ol, li, div {
+    margin-top: 0;
+  }
+
+  /* 3. Allow natural page breaks */
+  * {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* 4. Prevent orphaned section titles */
+  h2, h3, .section-title {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* 5. Kill flex/grid for print (VERY IMPORTANT) */
+  #resume-preview,
+  #resume-preview * {
+    display: block !important;
+    float: none !important;
+  }
+
+  /* 6. Prevent hidden overflow cutting content */
+  * {
+    overflow: visible !important;
+  }
+
+  /* 7. Avoid blank pages */
+  :last-child {
+    page-break-after: auto;
+  }
+}
+</style>
   <script type="importmap">
 {
   "imports": {
