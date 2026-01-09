@@ -1,7 +1,7 @@
 import { ResumeData, Translation, Language } from './types';
 
 // GLOBAL AD CONFIGURATION
-export const SHOW_ADS = true;
+export const SHOW_ADS = false;
 
 export const INITIAL_RESUME_STATE: ResumeData = {
   templateId: 'modern',
