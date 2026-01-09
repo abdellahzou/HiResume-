@@ -21,8 +21,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="EEjg_-VyAwGUbF4Qw8jxUiFjoGgyUVfOZnOMD5UWIkw" />
     <title>HiResume | Free Resume Builder</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- PDF.js for PDF parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -40,7 +40,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         font-family: 'Inter', sans-serif;
       }
 
-      /* PREVIEW STYLES (Screen) */
+      /* Screen Preview Styles */
       .a4-page {
         width: 210mm;
         min-height: 297mm;
@@ -50,25 +50,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         transform-origin: top center;
       }
 
-      /* PRINT STYLES (PDF Generation) */
+      /* Print / PDF Generation Styles */
       @media print {
         @page {
           margin: 0;
-          size: auto; /* Let content determine size, usually A4 */
+          size: auto; 
         }
 
         body {
           margin: 0;
           padding: 0;
           background: white;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
 
-        /* Hide the entire app UI */
+        /* Hide everything by default */
         body * {
           visibility: hidden;
         }
 
-        /* Show only the resume preview */
+        /* Only show the resume preview */
         #resume-preview, #resume-preview * {
           visibility: visible;
         }
@@ -79,42 +81,39 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           top: 0;
           margin: 0 !important;
           padding: 0 !important;
-          box-shadow: none !important;
           border: none !important;
+          box-shadow: none !important;
           
-          /* Force A4 dimensions */
+          /* Force standard A4 dimensions */
           width: 210mm;
           min-height: 297mm;
           overflow: hidden;
 
-          /* Auto-scale to fit 1 page (value set via JS) */
+          /* Apply dynamic scaling calculated in Builder.tsx */
           transform: scale(var(--print-scale, 1));
           transform-origin: top left;
-        }
-        
-        /* Ensure background colors print */
-        * {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
         }
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "docx": "https://esm.sh/docx@^9.5.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "clsx": "https://esm.sh/clsx@^2.1.1",
-    "zustand/": "https://esm.sh/zustand@^5.0.9/",
-    "zustand": "https://esm.sh/zustand@^5.0.9",
-    "uuid": "https://esm.sh/uuid@^13.0.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
+    "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
+    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
+    "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
+    "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
+    "clsx": "https://esm.sh/clsx@2.1.1",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "docx": "https://esm.sh/docx@8.5.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
-</script>
+  </script>
 </head>
   <body class="bg-gray-50 text-slate-900">
     <!-- Google Tag Manager (noscript) -->
