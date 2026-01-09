@@ -58,7 +58,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     // Here we try to fit single page if it's close.
     if (contentHeight > a4HeightPx) {
        // Add a buffer so it clip clip edges
-       scale = (a4HeightPx - 50) / contentHeight;
+       scale = (a4HeightPx - 20) / contentHeight;
        // Don't scale down ridiculously small
        scale = Math.max(scale, 0.6); 
     }
