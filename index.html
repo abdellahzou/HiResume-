@@ -1,132 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9V7KQW2BTX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-9V7KQW2BTX');
-</script>
-    <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TKMFJVWT');</script>
-<!-- End Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9V7KQW2BTX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9V7KQW2BTX');
+    </script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TKMFJVWT');</script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="EEjg_-VyAwGUbF4Qw8jxUiFjoGgyUVfOZnOMD5UWIkw" />
     <title>HiResume | Free Resume Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PDF.js for PDF parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-      // Initialize PDF.js worker
       if (window.pdfjsLib) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       }
     </script>
-    <!-- Mammoth.js for DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
     <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  
-  body {
-    font-family: 'Inter', sans-serif;
-  }
-
-  /* Screen Preview Styles */
-  .a4-page {
-    width: 210mm;
-    min-height: 297mm;
-    background: white;
-    margin: 0 auto;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform-origin: top center;
-  }
-
-  /* Print / PDF Generation Styles */
-  @media print {
-    @page {
-      margin: 0;
-      size: A4; /* Explicitly set size to A4 */
-    }
-
-    /* Helper to hide UI elements tagged with no-print */
-    .no-print {
-      display: none !important;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: white;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Target the Preview specifically */
-    #resume-preview {
-      visibility: visible !important;
-      position: absolute;
-      left: 0;
-      top: 0;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-      
-      /* Force standard A4 dimensions */
-      width: 210mm;
-      /* Use the variable passed from the handlePdfExport function */
-      transform: scale(var(--print-scale, 1));
-      transform-origin: top left;
-      
-      /* Ensure text doesn't overflow horizontally when scaled */
-      overflow: visible;
-    }
-
-    /* Hide everything else */
-    body > *:not(#resume-preview) {
-      display: none !important;
-    }
-  }
-</style>
-
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
-    "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
-    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
-    "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
-    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
-    "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
-    "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
-    "clsx": "https://esm.sh/clsx@2.1.1",
-    "uuid": "https://esm.sh/uuid@9.0.1",
-    "docx": "https://esm.sh/docx@8.5.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
-  }
-}
-  </script>
-</head>
-  <body class="bg-gray-50 text-slate-900">
-    <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
-</html>      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
       
       body {
         font-family: 'Inter', sans-serif;
@@ -138,81 +40,82 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         min-height: 297mm;
         background: white;
         margin: 0 auto;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transform-origin: top center;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
 
       /* Print / PDF Generation Styles */
       @media print {
-  /* Hide everything except the resume preview */
-  .no-print {
-    display: none !important;
-  }
-  
-  /* Apply the dynamic scaling to the container */
-  #resume-preview {
-    transform: scale(var(--print-scale, 1));
-    transform-origin: top center;
-    width: 210mm; /* Fixed A4 Width */
-    margin: 0 auto;
-  }
-
-        body {
+        @page {
           margin: 0;
-          padding: 0;
-          background: white;
+          size: A4;
+        }
+
+        /* 1. Hide EVERYTHING in the body */
+        body * {
+          display: none !important;
+        }
+
+        /* 2. Reset Body properties */
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
+          display: block !important; /* Overrides the 'none' above for the body itself */
         }
 
-        /* Hide everything by default */
-        body * {
-          visibility: hidden;
+        /* 3. Re-show ONLY the resume preview and its children */
+        #resume-preview, 
+        #resume-preview * {
+          display: block !important;
+          visibility: visible !important;
         }
 
-        /* Only show the resume preview */
-        #resume-preview, #resume-preview * {
-          visibility: visible;
-        }
-
-        
+        #resume-preview {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
           
-          /* Force standard A4 dimensions */
-          width: 210mm;
-          min-height: 297mm;
-          overflow: hidden;
+          /* This handles the 100% Fit logic from your script */
+          transform: scale(var(--print-scale, 1)) !important;
+          transform-origin: top left !important;
+        }
 
-          /* Apply dynamic scaling calculated in Builder.tsx */
-          transform: scale(var(--print-scale, 1));
-          transform-origin: top left;
+        /* Hide specific elements that might still linger */
+        header, footer, nav, .no-print, script, style {
+          display: none !important;
         }
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
-    "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
-    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
-    "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
-    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
-    "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
-    "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
-    "clsx": "https://esm.sh/clsx@2.1.1",
-    "uuid": "https://esm.sh/uuid@9.0.1",
-    "docx": "https://esm.sh/docx@8.5.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
-  }
-}
-  </script>
-</head>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react/": "https://esm.sh/react@18.3.1/",
+        "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
+        "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
+        "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
+        "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
+        "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
+        "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
+        "clsx": "https://esm.sh/clsx@2.1.1",
+        "uuid": "https://esm.sh/uuid@9.0.1",
+        "docx": "https://esm.sh/docx@8.5.0"
+      }
+    }
+    </script>
+  </head>
   <body class="bg-gray-50 text-slate-900">
-    <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
