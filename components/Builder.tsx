@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, TemplateId } from '../types';
 import { Editor } from './Editor';
@@ -8,7 +8,7 @@ import { SHOW_ADS } from '../constants';
 import { generateLatex, generateDocx, downloadFile } from '../utils';
 import { 
   User, Briefcase, FolderGit2, GraduationCap, Award, Zap, Eye, 
-  ChevronRight, ChevronLeft, Download, Printer, FileText, Code, CheckCircle2
+  ChevronRight, ChevronLeft, Download, Printer, FileText, Code, CheckCircle2, Loader2
 } from 'lucide-react';
 
 interface BuilderProps {
@@ -18,6 +18,7 @@ interface BuilderProps {
 export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore();
   const stepperRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const steps = [
     { id: 0, label: t.steps.personal, icon: User },
@@ -49,14 +50,17 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
-  const handlePdfExport = () => {
+  const handlePdfExport = async () => {
     const element = document.getElementById('resume-preview');
     if (!element) return;
     
+    setIsGeneratingPdf(true);
+
     // @ts-ignore
     if (typeof html2pdf === 'undefined') {
        console.warn('html2pdf not loaded');
        window.print();
+       setIsGeneratingPdf(false);
        return;
     }
 
@@ -68,30 +72,36 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Advanced: Capture canvas and manually fit to 1 page
-    // @ts-ignore
-    html2pdf().set(opt).from(element).toContainer().toCanvas().then((canvas) => {
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        
-        // Try to access jsPDF constructor globally (often exposed by html2pdf bundle)
-        // @ts-ignore
-        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+    try {
+      // 1. Generate Canvas from HTML
+      // @ts-ignore
+      const worker = html2pdf().set(opt).from(element).toCanvas();
+      const canvas = await worker.get('canvas');
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      
+      // 2. Try to use global jsPDF for 1-page forced fit
+      // @ts-ignore
+      const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
 
-        if (jsPDF) {
-            const doc = new jsPDF(opt.jsPDF);
-            const pageWidth = doc.internal.pageSize.getWidth();   // 210mm
-            const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
-            
-            // Force fit to page (stretch to fill A4)
-            // This guarantees strictly 1 page.
-            doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
-            doc.save('resume.pdf');
-        } else {
-            // Fallback: standard save (might create 2 pages if too long)
-            // @ts-ignore
-            html2pdf().set(opt).from(element).save();
-        }
-    });
+      if (jsPDF) {
+          const doc = new jsPDF(opt.jsPDF);
+          const pageWidth = doc.internal.pageSize.getWidth();   // 210mm
+          const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+          
+          doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+          doc.save('resume.pdf');
+      } else {
+          // Fallback: Use standard html2pdf save (might be multi-page)
+          // @ts-ignore
+          await html2pdf().set(opt).from(element).save();
+      }
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('PDF generation failed. Opening print dialog instead.');
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleLatexExport = () => {
@@ -175,8 +185,12 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                     <Download size={20} className="text-blue-600"/> Actions
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                     <button onClick={handlePdfExport} className="flex justify-center items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
-                        <Printer size={18} /> PDF
+                     <button 
+                        onClick={handlePdfExport} 
+                        disabled={isGeneratingPdf}
+                        className="flex justify-center items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+                     >
+                        {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Printer size={18} />} PDF
                      </button>
                      <button onClick={handleDocxExport} className="flex justify-center items-center gap-2 px-4 py-3 bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]">
                         <FileText size={18} /> Word
