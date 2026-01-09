@@ -60,7 +60,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
        // Add a buffer so it doesn't clip edges
        scale = (a4HeightPx - 20) / contentHeight;
        // Don't scale down ridiculously small
-       scale = Math.max(scale, 0.6); 
+       scale = Math.max(scale, 0.4); 
     }
 
     // 3. Set CSS Variable for @media print
