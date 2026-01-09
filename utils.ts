@@ -1,5 +1,7 @@
-import { ResumeData, Translation } from './types';
+import { ResumeData, Translation, AtsResult } from './types';
 import { Packer, Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+
+// --- EXISTING EXPORTS (generateLatex, generateDocx, downloadFile) ---
 
 export const generateLatex = (data: ResumeData, t: Translation): string => {
   const sanitize = (str: string) => str.replace(/([&%$#_{}])/g, '\\$1');
@@ -258,4 +260,145 @@ export const downloadFile = (content: string | Blob, filename: string, type: str
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+// --- NEW ATS RESUME CHECKER LOGIC ---
+
+// Globals for PDF.js and Mammoth (loaded via CDN)
+declare global {
+  interface Window {
+    pdfjsLib: any;
+    mammoth: any;
+  }
+}
+
+export const extractTextFromPdf = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map((item: any) => item.str).join(' ');
+    fullText += pageText + ' ';
+  }
+  
+  return fullText;
+};
+
+export const extractTextFromDocx = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+};
+
+export const analyzeResume = (text: string, fileName: string): AtsResult => {
+  const lowerText = text.toLowerCase();
+  
+  // 1. Check for standard sections
+  const sections = {
+    experience: /experience|employment|history|work/i.test(lowerText),
+    education: /education|university|college|degree/i.test(lowerText),
+    skills: /skills|competencies|technologies|proficiencies/i.test(lowerText),
+    projects: /projects|portfolio/i.test(lowerText),
+    summary: /summary|objective|about/i.test(lowerText)
+  };
+
+  const foundSections = Object.entries(sections).filter(([, found]) => found).map(([key]) => key);
+  const missingSections = Object.entries(sections).filter(([, found]) => !found).map(([key]) => key);
+
+  // 2. Check for contact info
+  const hasEmail = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(text);
+  const hasPhone = /(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/.test(text) || /\d{10}/.test(text);
+  const hasLinkedIn = /linkedin\.com\/in\//i.test(text);
+
+  // 3. Keywords / Action Verbs (Simple list)
+  const actionVerbs = [
+    'led', 'managed', 'developed', 'created', 'implemented', 'designed', 'improved', 
+    'increased', 'reduced', 'saved', 'achieved', 'launched', 'mentored', 'analyzed'
+  ];
+  const foundKeywords = actionVerbs.filter(verb => lowerText.includes(verb));
+  const keywordDensity = foundKeywords.length;
+
+  // 4. Scoring Logic (Deterministic)
+  let score = 0;
+  const breakdown = {
+    sections: 0, // max 20
+    keywords: 0, // max 30
+    formatting: 0, // max 15
+    skills: 0, // max 15
+    clarity: 0   // max 20
+  };
+
+  // Sections (20 pts)
+  breakdown.sections = (foundSections.length / 5) * 20;
+  score += breakdown.sections;
+
+  // Keywords (30 pts)
+  // Cap at 15 words for full points
+  breakdown.keywords = Math.min((keywordDensity / 10) * 30, 30);
+  score += breakdown.keywords;
+
+  // Formatting (15 pts)
+  // If we extracted text successfully, that's a good sign.
+  // Check file type
+  const isPdf = fileName.toLowerCase().endsWith('.pdf');
+  const isDocx = fileName.toLowerCase().endsWith('.docx');
+  let formattingScore = 15;
+  if (!text || text.length < 100) formattingScore = 0; // Likely image based or empty
+  breakdown.formatting = formattingScore;
+  score += breakdown.formatting;
+
+  // Skills (15 pts)
+  // Rudimentary check: if "Skills" section exists and text is long enough
+  if (sections.skills) {
+      breakdown.skills = 15;
+  } else {
+      breakdown.skills = 5;
+  }
+  score += breakdown.skills;
+
+  // Clarity/Contact (20 pts)
+  let clarityScore = 0;
+  if (hasEmail) clarityScore += 10;
+  if (hasPhone) clarityScore += 5;
+  if (hasLinkedIn) clarityScore += 5;
+  breakdown.clarity = clarityScore;
+  score += breakdown.clarity;
+
+  // Feedback Generation
+  const strengths = [];
+  const improvements = [];
+
+  if (hasEmail) strengths.push('Contact information (Email) detected.');
+  else improvements.push('Missing email address.');
+  
+  if (sections.experience) strengths.push('Work Experience section detected.');
+  else improvements.push('Add a clear "Work Experience" section.');
+
+  if (sections.education) strengths.push('Education section detected.');
+  else improvements.push('Add a clear "Education" section.');
+
+  if (sections.skills) strengths.push('Skills section detected.');
+  else improvements.push('Add a dedicated "Skills" section.');
+
+  if (keywordDensity > 5) strengths.push('Good use of action verbs.');
+  else improvements.push('Use more action verbs (e.g., Led, Developed, Analyzed).');
+
+  if (text.length < 500) improvements.push('Resume content seems too short. Aim for at least 300-500 words.');
+
+  return {
+    score: Math.round(score),
+    breakdown,
+    strengths,
+    improvements,
+    details: {
+      wordCount: text.split(/\s+/).length,
+      foundSections,
+      missingSections,
+      contactInfoFound: hasEmail || hasPhone,
+      fileType: isPdf ? 'PDF' : (isDocx ? 'DOCX' : 'Unknown')
+    }
+  };
 };

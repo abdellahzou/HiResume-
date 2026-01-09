@@ -61,6 +61,26 @@ export interface ResumeData {
   templateId: TemplateId;
 }
 
+export interface AtsResult {
+  score: number;
+  breakdown: {
+    sections: number; // /20
+    keywords: number; // /30
+    formatting: number; // /15
+    skills: number; // /15
+    clarity: number; // /20
+  };
+  strengths: string[];
+  improvements: string[];
+  details: {
+    wordCount: number;
+    foundSections: string[];
+    missingSections: string[];
+    contactInfoFound: boolean;
+    fileType: string;
+  };
+}
+
 export interface Translation {
   metaTitle: string;
   metaDesc: string;
@@ -71,6 +91,7 @@ export interface Translation {
     preview: string;
     features: string;
     builder: string;
+    ats: string;
   };
   landing: {
     heroTitle: string;
@@ -94,6 +115,36 @@ export interface Translation {
     seoContent: string;
     faqTitle: string;
     faqItems: { q: string; a: string }[];
+  };
+  ats: {
+    heroTitle: string;
+    heroSubtitle: string;
+    uploadTitle: string;
+    uploadDesc: string;
+    analyzing: string;
+    scoreTitle: string;
+    scoreSubtitle: string;
+    strengths: string;
+    improvements: string;
+    breakdown: string;
+    privacy: string;
+    reupload: string;
+    categories: {
+      sections: string;
+      keywords: string;
+      formatting: string;
+      skills: string;
+      clarity: string;
+    };
+    landing: {
+      whyMatters: string;
+      whyMattersDesc: string;
+      howWorks: string;
+      howWorksDesc: string;
+      privacyTitle: string;
+      privacyDesc: string;
+      faq: { q: string; a: string }[];
+    }
   };
   footer: {
     copyright: string;

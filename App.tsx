@@ -1,17 +1,19 @@
 import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useParams, useNavigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useResumeStore } from './store';
 import { TRANSLATIONS } from './constants';
 import { Builder } from './components/Builder';
 import { Landing } from './components/Landing';
 import { Legal } from './components/Legal';
 import { Seo } from './components/Seo';
+import { AtsChecker } from './components/AtsChecker';
 import { Language } from './types';
-import { FileText, Languages, RefreshCw } from 'lucide-react';
+import { FileText, Languages, RefreshCw, BarChart } from 'lucide-react';
 
 const SiteLayout = ({ children }: { children?: React.ReactNode }) => {
   const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Validate language, default to 'en' if invalid
   const validLangs: Language[] = ['en', 'fr', 'es'];
@@ -26,9 +28,18 @@ const SiteLayout = ({ children }: { children?: React.ReactNode }) => {
     const nextIndex = (currentIndex + 1) % validLangs.length;
     const newLang = validLangs[nextIndex];
 
-    // Navigate to the same page but in the new language
-    const currentPath = window.location.hash.replace(`#/${currentLang}`, '');
-    navigate(`/${newLang}${currentPath}`);
+    // Current path is like /en/builder or /en/ats-check
+    // We want to replace the first segment (language)
+    const currentPath = location.pathname;
+    const segments = currentPath.split('/'); // ["", "en", "builder"]
+    
+    if (segments[1] === currentLang) {
+       segments[1] = newLang;
+       navigate(segments.join('/'));
+    } else {
+       // Fallback for root or weird paths
+       navigate(`/${newLang}`);
+    }
   };
 
   return (
@@ -47,6 +58,9 @@ const SiteLayout = ({ children }: { children?: React.ReactNode }) => {
               <span className="font-bold text-xl tracking-tight text-gray-900">{t.nav.brand}</span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link to={`/${currentLang}/ats-check`} className="text-sm font-medium text-gray-600 hover:text-blue-600 flex items-center gap-1">
+                <BarChart size={16} className="hidden sm:inline" /> {t.nav.ats}
+              </Link>
               <Link to={`/${currentLang}/builder`} className="hidden sm:inline-block text-sm font-medium text-blue-600 hover:text-blue-800">
                 {t.nav.builder}
               </Link>
@@ -89,6 +103,11 @@ const SiteLayout = ({ children }: { children?: React.ReactNode }) => {
             </div>
             <div className="col-span-1 md:col-span-3 flex flex-wrap gap-8 md:justify-end">
                 <div className="flex flex-col gap-2">
+                    <h4 className="font-bold text-sm uppercase text-slate-400">Products</h4>
+                    <Link to={`/${currentLang}/builder`} className="text-sm text-slate-600 hover:text-blue-600">{t.nav.builder}</Link>
+                    <Link to={`/${currentLang}/ats-check`} className="text-sm text-slate-600 hover:text-blue-600">{t.nav.ats}</Link>
+                </div>
+                <div className="flex flex-col gap-2">
                     <h4 className="font-bold text-sm uppercase text-slate-400">Legal</h4>
                     <Link to={`/${currentLang}/privacy`} className="text-sm text-slate-600 hover:text-blue-600">{t.footer.privacy}</Link>
                     <Link to={`/${currentLang}/terms`} className="text-sm text-slate-600 hover:text-blue-600">{t.footer.terms}</Link>
@@ -118,6 +137,13 @@ const BuilderPage = () => {
     const validLangs: Language[] = ['en', 'fr', 'es'];
     const currentLang = validLangs.includes(lang as Language) ? (lang as Language) : 'en';
     return <Builder t={TRANSLATIONS[currentLang]} />;
+};
+
+const AtsPage = () => {
+    const { lang } = useParams<{ lang: string }>();
+    const validLangs: Language[] = ['en', 'fr', 'es'];
+    const currentLang = validLangs.includes(lang as Language) ? (lang as Language) : 'en';
+    return <AtsChecker t={TRANSLATIONS[currentLang]} />;
 };
 
 const LegalPage = ({ type }: { type: 'privacy' | 'terms' | 'faq' | 'contact' }) => {
@@ -150,6 +176,7 @@ const App = () => {
         {/* Language Routes */}
         <Route path="/:lang" element={<SiteLayout><LandingPage /></SiteLayout>} />
         <Route path="/:lang/builder" element={<SiteLayout><BuilderPage /></SiteLayout>} />
+        <Route path="/:lang/ats-check" element={<SiteLayout><AtsPage /></SiteLayout>} />
         
         {/* Legal Pages */}
         <Route path="/:lang/privacy" element={<SiteLayout><LegalPage type="privacy" /></SiteLayout>} />

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Translation } from '../types';
 import { SHOW_ADS } from '../constants';
 import { AdSpace } from './AdSpace';
-import { ShieldCheck, FileText, Download, CheckCircle, Zap, Eye, ChevronRight, Star } from 'lucide-react';
+import { ShieldCheck, FileText, Download, CheckCircle, Zap, ChevronRight } from 'lucide-react';
 
 interface LandingProps {
   t: Translation;
@@ -12,14 +12,6 @@ interface LandingProps {
 
 export const Landing: React.FC<LandingProps> = ({ t, lang }) => {
   
-  const scrollToTemplates = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const element = document.getElementById('templates');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="flex flex-col gap-24 pb-20 overflow-hidden">
       
@@ -53,13 +45,12 @@ export const Landing: React.FC<LandingProps> = ({ t, lang }) => {
             >
               {t.landing.cta} <ChevronRight className="ml-2" />
             </Link>
-            <a
-              href="#templates"
-              onClick={scrollToTemplates}
+            <Link
+              to={`/${lang}/ats-check`}
               className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-gray-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
             >
               {t.landing.ctaSecondary}
-            </a>
+            </Link>
           </div>
 
           <div className="pt-8 flex justify-center gap-8 text-sm font-medium text-slate-500">
