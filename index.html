@@ -21,8 +21,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="EEjg_-VyAwGUbF4Qw8jxUiFjoGgyUVfOZnOMD5UWIkw" />
     <title>HiResume | Free Resume Builder</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- PDF.js for ATS Resume Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
       // Initialize PDF.js worker
@@ -39,37 +40,62 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         font-family: 'Inter', sans-serif;
       }
 
-      @media print {
-        @page {
-          margin: 0;
-          size: auto;
-        }
-        body {
-          print-color-adjust: exact;
-          -webkit-print-color-adjust: exact;
-        }
-        .no-print {
-          display: none !important;
-        }
-        .print-only {
-          display: block !important;
-        }
-      }
-
-      /* A4 Paper Size for Preview */
+      /* PREVIEW STYLES (Screen) */
       .a4-page {
         width: 210mm;
         min-height: 297mm;
         background: white;
         margin: 0 auto;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transform-origin: top center;
       }
-      
+
+      /* PRINT STYLES (PDF Generation) */
       @media print {
-        .a4-page {
-          box-shadow: none;
+        @page {
           margin: 0;
-          width: 100%;
+          size: auto; /* Let content determine size, usually A4 */
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          background: white;
+        }
+
+        /* Hide the entire app UI */
+        body * {
+          visibility: hidden;
+        }
+
+        /* Show only the resume preview */
+        #resume-preview, #resume-preview * {
+          visibility: visible;
+        }
+
+        #resume-preview {
+          position: absolute;
+          left: 0;
+          top: 0;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          border: none !important;
+          
+          /* Force A4 dimensions */
+          width: 210mm;
+          min-height: 297mm;
+          overflow: hidden;
+
+          /* Auto-scale to fit 1 page (value set via JS) */
+          transform: scale(var(--print-scale, 1));
+          transform-origin: top left;
+        }
+        
+        /* Ensure background colors print */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
       }
     </style>
