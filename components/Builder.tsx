@@ -106,7 +106,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
       </div>
 
       {/* ================= CONTENT ================= */}
-      <main className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+      <main className="flex-1 px-4 py-6 space-y-6">
         {/* Section Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -167,9 +167,12 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             </div>
 
             {/* Preview */}
-            <div className="bg-white rounded-xl shadow ring-1 ring-gray-200">
-              <Preview t={t} />
-            </div>
+            <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[75vh] overflow-hidden">
+  <div className="h-full overflow-y-auto">
+    <Preview t={t} />
+  </div>
+</div>
+
 
             
           </>
