@@ -1,286 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9V7KQW2BTX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-9V7KQW2BTX');
-</script>
+<head>
     <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TKMFJVWT');</script>
-<!-- End Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9V7KQW2BTX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9V7KQW2BTX');
+    </script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TKMFJVWT');</script>
+    <!-- End Google Tag Manager -->
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="EEjg_-VyAwGUbF4Qw8jxUiFjoGgyUVfOZnOMD5UWIkw" />
     <title>HiResume | Free Resume Builder</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Correct Tailwind v4 Browser Script -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     
-    <!-- PDF.js for PDF parsing -->
+    <!-- PDF & DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-      // Initialize PDF.js worker
       if (window.pdfjsLib) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       }
     </script>
-    <!-- Mammoth.js for DOCX parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
     <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss";
-@import "tw-animate-css";
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* =========================
-   VARIABLES & THEME
-========================= */
-@custom-variant dark (&:is(.dark *));
+    /* Standard CSS Variables (Converted from your OKLCH Theme) */
+    :root {
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.145 0 0);
+      --primary: oklch(0.205 0 0);
+      --border: oklch(0.922 0 0);
+      --radius: 0.625rem;
+    }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
-  /* Sidebar and Charts omitted for brevity but remain compatible */
-}
+    .dark {
+      --background: oklch(0.145 0 0);
+      --foreground: oklch(0.985 0 0);
+      --border: oklch(0.269 0 0);
+    }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --border: oklch(0.269 0 0);
-}
+    /* Base Styling (Replaces @apply which browsers don't support) */
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
-@theme inline {
-  --font-sans: "Inter", "Geist", sans-serif;
-  --font-mono: "Geist Mono", monospace;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-border: var(--border);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-}
+    .a4-page {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      margin: 2rem auto;
+      padding: 0.5in;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
 
-/* =========================
-   BASE & SCREEN PREVIEW
-========================= */
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
-  }
-}
+    /* =========================
+       PRINT / PDF (ATS-FRIENDLY)
+    ========================= */
+    @media print {
+      @page {
+        size: A4;
+        margin: 0.4in;
+      }
 
-.a4-page {
-  width: 210mm;
-  min-height: 297mm;
-  background: #ffffff;
-  margin: 2rem auto;
-  padding: 0.5in;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
+      /* Reset body for print */
+      html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100%;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
 
-/* =========================
-   PRINT / PDF (ATS-FRIENDLY)
-========================= */
-@media print {
-  @page {
-    size: A4;
-    margin: 0.4in;
-  }
+      /* Hide UI elements, show only resume */
+      body * {
+        visibility: hidden;
+      }
 
-  /* 1. Global Print Resets */
-  html, body {
-    background: #ffffff !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100%;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
+      #resume-preview,
+      #resume-preview * {
+        visibility: visible;
+      }
 
-  /* 2. Isolation: Only show the resume-preview */
-  body * {
-    visibility: hidden;
-  }
+      #resume-preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        display: block !important;
+      }
 
-  #resume-preview,
-  #resume-preview * {
-    visibility: visible;
-  }
+      /* ATS Optimization: Linearize layout */
+      div, section, article {
+        page-break-inside: avoid;
+        display: block !important;
+      }
 
-  #resume-preview {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    display: block !important;
-  }
+      .flex {
+        display: flex !important;
+        page-break-inside: avoid;
+      }
 
-  /* 3. ATS Optimization: Linearize layout */
-  /* We force block display so parsers read top-to-bottom */
-  div, section, article {
-    page-break-inside: avoid;
-    display: block !important;
-  }
+      /* Typography Scaling */
+      body {
+        font-size: 9pt !important;
+        line-height: 1.25 !important;
+        color: black !important;
+      }
 
-  /* Allow flex for contact headers but prevent page breaks inside them */
-  .flex {
-    display: flex !important;
-    page-break-inside: avoid;
-  }
+      h1 {
+        font-size: 16pt !important;
+        font-weight: bold !important;
+        margin-bottom: 4pt !important;
+      }
 
-  /* 4. Typography Tightening (Fixed pt sizes for PDF consistency) */
-  body {
-    font-size: 9pt !important;
-    line-height: 1.25 !important;
-    color: black !important;
-  }
+      h2 {
+        font-size: 11pt !important;
+        font-weight: bold !important;
+        margin-top: 6pt !important;
+        margin-bottom: 3pt !important;
+        border-bottom: 0.5pt solid #000 !important;
+      }
 
-  h1, .text-4xl {
-    font-size: 16pt !important;
-    font-weight: bold !important;
-    margin-bottom: 4pt !important;
-    line-height: 1.1 !important;
-  }
+      h3 {
+        font-size: 10pt !important;
+        font-weight: bold !important;
+        margin-top: 4pt !important;
+      }
 
-  h2, .text-xl {
-    font-size: 11pt !important;
-    font-weight: bold !important;
-    margin-top: 6pt !important;
-    margin-bottom: 3pt !important;
-    border-bottom: 0.5pt solid #000 !important; /* Visual separator for ATS sections */
-  }
+      /* Spacing Overrides */
+      .mb-8 { margin-bottom: 6pt !important; }
+      .mb-4 { margin-bottom: 3pt !important; }
+      .p-10, .p-8 { padding: 0 !important; }
 
-  h3, .text-lg {
-    font-size: 10pt !important;
-    font-weight: bold !important;
-    margin-top: 4pt !important;
-    margin-bottom: 2pt !important;
-  }
+      /* Cleanliness */
+      .no-print, button, nav {
+        display: none !important;
+      }
 
-  p, li, span, .text-base, .text-sm {
-    font-size: 9pt !important;
-    margin: 0 !important;
-  }
+      * {
+        box-shadow: none !important;
+        border-color: #000 !important;
+      }
+    }
+    </style>
 
-  .text-xs {
-    font-size: 8pt !important;
-  }
-
-  /* 5. Spacing Overrides (Mapping Tailwind to Points) */
-  .mb-8 { margin-bottom: 6pt !important; }
-  .mb-6 { margin-bottom: 4pt !important; }
-  .mb-4 { margin-bottom: 3pt !important; }
-  .mb-2 { margin-bottom: 1pt !important; }
-  .space-y-6 > * + * { margin-top: 5pt !important; }
-  .space-y-4 > * + * { margin-top: 3pt !important; }
-  .p-10, .p-8, .p-6 { padding: 0 !important; }
-
-  /* 6. Decoration & Cleanliness */
-  a {
-    text-decoration: none !important;
-    color: black !important;
-  }
-
-  ul, ol {
-    padding-left: 14pt !important;
-    margin-top: 2pt !important;
-  }
-
-  li {
-    margin-bottom: 1pt !important;
-  }
-
-  /* Remove heavy elements that confuse parsers or waste space */
-  .no-print,
-  button,
-  nav,
-  footer:not(.resume-footer) {
-    display: none !important;
-  }
-
-  * {
-    box-shadow: none !important;
-    text-shadow: none !important;
-    border-color: #000 !important;
-  }
-
-  /* Keep borders minimal (horizontal rules are okay) */
-  .border-none { border: none !important; }
-  
-  /* Ensure images don't break page */
-  img, svg {
-    max-width: 100% !important;
-    page-break-inside: avoid;
-  }
-
-  /* Force single page logic */
-  :last-child {
-    margin-bottom: 0 !important;
-  }
-}
-</style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
-    "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
-    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
-    "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
-    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
-    "zustand/": "https://esm.sh/zustand@4.5.2/?deps=react@18.3.1",
-    "zustand/middleware": "https://esm.sh/zustand@4.5.2/middleware?deps=react@18.3.1",
-    "clsx": "https://esm.sh/clsx@2.1.1",
-    "uuid": "https://esm.sh/uuid@9.0.1",
-    "docx": "https://esm.sh/docx@8.5.0",
-    "react-dom/": "https://esm.sh/react-dom/^19.2.3/"
-  }
-}
-  </script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react/": "https://esm.sh/react@18.3.1/",
+        "react-dom": "https://esm.sh/react-dom@18.3.1?deps=react@18.3.1",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?deps=react@18.3.1",
+        "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.3.1,react-dom@18.3.1",
+        "lucide-react": "https://esm.sh/lucide-react@0.368.0?deps=react@18.3.1",
+        "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
+        "clsx": "https://esm.sh/clsx@2.1.1",
+        "uuid": "https://esm.sh/uuid@9.0.1",
+        "docx": "https://esm.sh/docx@8.5.0"
+      }
+    }
+    </script>
 </head>
-  <body class="bg-gray-50 text-slate-900">
-    <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+<body class="bg-gray-50 text-slate-900">
+    <!-- GTM (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKMFJVWT"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-  </body>
+</body>
 </html>
