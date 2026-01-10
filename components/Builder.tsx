@@ -40,6 +40,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: "modern", name: "Modern" },
     { id: "classic", name: "Classic" },
     { id: "minimal", name: "Minimal" },
+    { id: "executive", name: "Executive" },
   ]
 
   useEffect(() => {
