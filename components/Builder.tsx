@@ -9,22 +9,7 @@ import { Preview } from "./Preview"
 import { AdSpace } from "./AdSpace"
 import { SHOW_ADS } from "../constants"
 import { generateLatex, generateDocx, downloadFile } from "../utils"
-import {
-  User,
-  Briefcase,
-  FolderGit2,
-  GraduationCap,
-  Award,
-  Zap,
-  Eye,
-  ChevronRight,
-  ChevronLeft,
-  Download,
-  Printer,
-  FileText,
-  Code,
-  CheckCircle2,
-} from "lucide-react"
+import { Printer, Code, FileText, Download, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react"
 
 interface BuilderProps {
   t: Translation
@@ -34,17 +19,14 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore()
   const stepperRef = useRef<HTMLDivElement>(null)
 
-  const maxStep = 6
-  const isPreview = currentStep === maxStep
-
   const steps = [
-    { id: 0, label: t.steps.personal, icon: User },
-    { id: 1, label: t.steps.experience, icon: Briefcase },
-    { id: 2, label: t.steps.projects, icon: FolderGit2 },
-    { id: 3, label: t.steps.education, icon: GraduationCap },
-    { id: 4, label: t.steps.certifications, icon: Award },
-    { id: 5, label: t.steps.skills, icon: Zap },
-    { id: 6, label: t.steps.preview, icon: Eye },
+    { id: 0, label: t.steps.personal },
+    { id: 1, label: t.steps.experience },
+    { id: 2, label: t.steps.projects },
+    { id: 3, label: t.steps.education },
+    { id: 4, label: t.steps.certifications },
+    { id: 5, label: t.steps.skills },
+    { id: 6, label: t.steps.preview },
   ]
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -58,21 +40,22 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   useEffect(() => {
     if (stepperRef.current) {
-      const active = stepperRef.current.querySelector('[data-active="true"]')
-      active?.scrollIntoView({ behavior: "smooth", inline: "center" })
+      const activeBtn = stepperRef.current.querySelector('[data-active="true"]')
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+      }
     }
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentStep])
 
-  /* ---------------- EXPORTS ---------------- */
-
   const handlePdfExport = () => {
-    const originalTitle = document.title
-    const safeName = resume.personalInfo.fullName
-      ?.replace(/[^a-z0-9]/gi, "_")
-      .substring(0, 20)
+    const element = document.getElementById("resume-preview")
+    if (!element) return
 
+    const originalTitle = document.title
+    const safeName = resume.personalInfo.fullName.replace(/[^a-z0-9]/gi, "_").substring(0, 20)
     document.title = safeName ? `Resume_${safeName}` : "Resume"
+
     window.print()
     document.title = originalTitle
   }
@@ -84,144 +67,162 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   const handleDocxExport = async () => {
     const blob = await generateDocx(resume, t)
-    downloadFile(
-      blob,
-      "resume.docx",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
+    downloadFile(blob, "resume.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
   }
 
-  /* ---------------- UI ---------------- */
+  const maxStep = 6
 
   return (
-    <div className="flex flex-col w-full min-h-[calc(100vh-80px)]">
-      {/* ───────────────── STEPPER ───────────────── */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm no-print">
-        <div
-          ref={stepperRef}
-          className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide snap-x"
-        >
-          {steps.map((step) => {
-            const Icon = step.icon
+    <div className="flex flex-col w-full min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 p-4 md:p-6 sticky top-0 z-40 no-print">
+        {/* Step Indicators */}
+        <div className="flex items-center justify-center gap-4 mb-6 px-2" ref={stepperRef}>
+          {steps.map((step, index) => {
             const isActive = currentStep === step.id
             const isCompleted = currentStep > step.id
 
             return (
-              <button
-                key={step.id}
-                data-active={isActive}
-                onClick={() => setStep(step.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border font-semibold text-sm snap-start whitespace-nowrap transition-all
-                  ${
+              <div key={step.id} className="flex items-center gap-4 flex-shrink-0">
+                {/* Step Circle */}
+                <button
+                  onClick={() => setStep(step.id)}
+                  data-active={isActive}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all flex-shrink-0 ${
                     isActive
-                      ? "bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-100"
+                      ? "bg-blue-500 text-white ring-4 ring-blue-200 shadow-md"
                       : isCompleted
-                      ? "bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100"
-                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                        ? "bg-slate-700 text-white"
+                        : "bg-gray-300 text-white"
                   }`}
-              >
-                {isCompleted ? <CheckCircle2 size={16} /> : <Icon size={16} />}
-                {step.label}
-              </button>
+                >
+                  {isCompleted ? <CheckCircle2 size={20} /> : index + 1}
+                </button>
+
+                {/* Connector Line (except on last step) */}
+                {index < steps.length - 1 && (
+                  <div className={`w-8 h-0.5 transition-all ${isCompleted ? "bg-slate-700" : "bg-gray-300"}`} />
+                )}
+              </div>
             )
           })}
         </div>
+
+        {/* Step Labels Row */}
+        <div className="flex items-center justify-center gap-4 overflow-x-auto pb-2 scrollbar-hide px-2">
+          {steps.map((step) => (
+            <button
+              key={step.id}
+              onClick={() => setStep(step.id)}
+              className={`text-xs md:text-sm font-semibold whitespace-nowrap px-2 py-1 transition-all ${
+                currentStep === step.id
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : currentStep > step.id
+                    ? "text-slate-700"
+                    : "text-gray-500"
+              }`}
+            >
+              {step.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ───────────────── MAIN CONTENT ───────────────── */}
-      <div className="flex-grow bg-slate-50/50">
-        <div className="max-w-6xl mx-auto p-4 md:p-8 pb-32 grid md:grid-cols-[420px_1fr] gap-8">
-          {/* LEFT — EDITOR */}
-          <div className="space-y-6 no-print">
+      <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6 flex-1">
+        {/* Left Side: Editor Form (Always visible) */}
+        <div className="w-full lg:w-1/3 flex flex-col gap-4 no-print">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex-1">
             <Editor t={t} />
 
-            {SHOW_ADS && <AdSpace className="h-24" label="Ad Space" />}
+            {/* Ad Placeholder */}
+            {SHOW_ADS && (
+              <div className="mt-8 pt-8 border-t border-dashed border-gray-200">
+                <AdSpace className="h-20" label="Ad Space (In-Form)" />
+              </div>
+            )}
           </div>
 
-          {/* RIGHT — PREVIEW */}
-          <div className="flex flex-col gap-6">
-            {/* ACTION CARD */}
-            <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-[6.5rem] z-20 no-print">
-              <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                <Download size={20} className="text-blue-600" />
-                Actions
-              </h3>
+          {/* Navigation Buttons */}
+          <div className="flex gap-3">
+            <button
+              disabled={currentStep === 0}
+              onClick={() => setStep(Math.max(0, currentStep - 1))}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg text-sm hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft size={18} />
+              {t.actions.back}
+            </button>
+            <button
+              onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg text-sm hover:bg-blue-700 transition-all shadow-sm"
+            >
+              {currentStep === maxStep ? t.nav.preview : t.actions.next}
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        {/* Right Side: Preview & Download */}
+        <div className="flex-1 flex flex-col gap-4">
+          {/* Download Bar */}
+          <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <Download size={18} className="text-blue-600" />
+                Download
+              </h3>
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handlePdfExport}
-                  className="btn-primary"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all"
+                  title="Export as PDF (ATS-friendly, single page)"
                 >
-                  <Printer size={18} /> PDF
+                  <Printer size={16} /> PDF
                 </button>
-
                 <button
                   onClick={handleDocxExport}
-                  className="btn-secondary"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-all"
                 >
-                  <FileText size={18} /> Word
+                  <FileText size={16} /> Word
                 </button>
-
                 <button
                   onClick={handleLatexExport}
-                  className="btn-tertiary"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all"
                 >
-                  <Code size={18} /> LaTeX
+                  <Code size={16} /> LaTeX
                 </button>
               </div>
+            </div>
 
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+            {/* Template Selection */}
+            <div className="pt-3 border-t border-gray-100 mt-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 {t.actions.changeTemplate}
               </p>
-
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {templates.map((tmpl) => (
                   <button
                     key={tmpl.id}
                     onClick={() => setTemplateId(tmpl.id)}
-                    className={`px-5 py-2.5 rounded-xl border text-sm font-bold whitespace-nowrap transition-all
-                      ${
-                        resume.templateId === tmpl.id
-                          ? "bg-slate-900 text-white border-slate-900 shadow-lg"
-                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                      }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                      resume.templateId === tmpl.id
+                        ? "bg-slate-900 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                   >
                     {tmpl.name}
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* PREVIEW PAPER */}
-            <div className="overflow-auto pb-10">
-              <Preview t={t} />
-            </div>
-
-            <AdSpace className="h-24" label="Ad Space (Bottom)" />
           </div>
-        </div>
-      </div>
 
-      {/* ───────────────── FOOTER NAV ───────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 no-print">
-        <div className="max-w-6xl mx-auto flex gap-4">
-          <button
-            disabled={currentStep === 0}
-            onClick={() => setStep(Math.max(0, currentStep - 1))}
-            className="footer-btn-secondary"
-          >
-            <ChevronLeft size={20} /> {t.actions.back}
-          </button>
+          {/* Resume Preview */}
+          <div className="overflow-auto flex-1 print:p-0">
+            <Preview t={t} />
+          </div>
 
-          <button
-            onClick={() =>
-              setStep(isPreview ? 0 : Math.min(maxStep, currentStep + 1))
-            }
-            className="footer-btn-primary"
-          >
-            {isPreview ? "Edit Info" : t.actions.next}
-            {!isPreview && <ChevronRight size={20} />}
-          </button>
+          {/* Ad Placeholder */}
+          <AdSpace className="h-24" label="Ad Space (Bottom)" />
         </div>
       </div>
     </div>
