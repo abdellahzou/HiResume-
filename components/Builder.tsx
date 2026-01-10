@@ -40,6 +40,9 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: "modern", name: "Modern" },
     { id: "classic", name: "Classic" },
     { id: "minimal", name: "Minimal" },
+    { id: "professional", name: "Professional" },
+    { id: "creative", name: "Creative" },
+    { id: "executive", name: "Executive" },
   ]
 
   useEffect(() => {
@@ -138,12 +141,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 </button>
               ))}
             </div>
-
-            {/* Preview */}
-            <div className="bg-white rounded-xl shadow ring-1 ring-gray-200">
-              <Preview t={t} />
-            </div>
-
             {/* Download actions */}
             <div className="space-y-2">
               <button
@@ -168,6 +165,13 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 </button>
               </div>
             </div>
+
+            {/* Preview */}
+            <div className="bg-white rounded-xl shadow ring-1 ring-gray-200">
+              <Preview t={t} />
+            </div>
+
+            
           </>
         )}
       </main>
