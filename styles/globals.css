@@ -1,0 +1,335 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Add comprehensive print styles for single-page ATS-friendly PDF output */
+@media print {
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 0.4in 0.4in 0.4in 0.4in;
+  }
+
+  /* Hide non-content elements */
+  .no-print,
+  .hidden,
+  nav,
+  header:not(.resume-header),
+  footer:not(.resume-footer) {
+    display: none !important;
+  }
+
+  /* Document root and body */
+  html {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    line-height: 1.3;
+    font-size: 9pt;
+    background: white;
+    color: black;
+  }
+
+  /* Resume container - ensure single page */
+  #resume-preview {
+    margin: 0;
+    padding: 0;
+    page-break-after: avoid;
+    overflow: visible;
+  }
+
+  /* All divs should be block display for ATS */
+  div {
+    page-break-inside: avoid;
+  }
+
+  /* Typography scaling */
+  h1 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0 0 4pt 0;
+    padding: 0;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 10pt;
+    font-weight: bold;
+    margin: 6pt 0 3pt 0;
+    padding: 0;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 10pt;
+    font-weight: bold;
+    margin: 4pt 0 2pt 0;
+    padding: 0;
+    page-break-after: avoid;
+  }
+
+  p,
+  li,
+  span {
+    font-size: 9pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Section spacing */
+  section {
+    margin-bottom: 4pt;
+    page-break-inside: avoid;
+  }
+
+  /* List items */
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 12pt;
+  }
+
+  li {
+    margin: 2pt 0;
+  }
+
+  /* Remove borders and shadows for cleaner ATS parsing */
+  * {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .border-b-2,
+  .border-b,
+  .border-t,
+  .border-dashed {
+    border: none !important;
+  }
+
+  /* Links - print as plain text */
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
+  /* Contact info compact layout */
+  .flex {
+    display: block;
+  }
+
+  /* Spacing optimization */
+  .mb-8 {
+    margin-bottom: 4pt !important;
+  }
+
+  .mb-6 {
+    margin-bottom: 3pt !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 2pt !important;
+  }
+
+  .mb-3 {
+    margin-bottom: 2pt !important;
+  }
+
+  .mb-2 {
+    margin-bottom: 1pt !important;
+  }
+
+  .mb-1 {
+    margin-bottom: 0.5pt !important;
+  }
+
+  .pb-6 {
+    padding-bottom: 3pt !important;
+  }
+
+  .pb-1 {
+    padding-bottom: 0 !important;
+  }
+
+  .p-10 {
+    padding: 0 !important;
+  }
+
+  .gap-4 {
+    gap: 2pt !important;
+  }
+
+  .gap-2 {
+    gap: 1pt !important;
+  }
+
+  .space-y-6 > * + * {
+    margin-top: 3pt !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 2pt !important;
+  }
+
+  /* Prevent page breaks inside important sections */
+  .flex.justify-between,
+  .flex.flex-wrap {
+    page-break-inside: avoid;
+  }
+
+  /* Whitespace pre-line for descriptions */
+  .whitespace-pre-line {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Text sizing utilities */
+  .text-4xl {
+    font-size: 16pt !important;
+  }
+
+  .text-xl {
+    font-size: 11pt !important;
+  }
+
+  .text-lg {
+    font-size: 10pt !important;
+  }
+
+  .text-base {
+    font-size: 9pt !important;
+  }
+
+  .text-sm {
+    font-size: 9pt !important;
+  }
+
+  .text-xs {
+    font-size: 8pt !important;
+  }
+}
