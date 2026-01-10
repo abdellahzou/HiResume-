@@ -89,10 +89,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full">
-      {/* Left Side: Editor (Hidden in Print, Visible in Steps 0-5) */}
-      <div
-        className={`w-full md:w-1/3 flex flex-col gap-6 no-print ${currentStep === maxStep ? "hidden md:flex" : ""}`}
-      >
+      {/* Left Side: Editor (Always visible, not hidden on preview) */}
+      <div className={`w-full md:w-1/3 flex flex-col gap-6 no-print`}>
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl shadow-sm border border-blue-200">
           <h3 className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4 px-2">Build Your Resume</h3>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" ref={stepperRef}>
@@ -128,7 +126,18 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         {/* Ad Placeholder 1 - Sidebar */}
         <AdSpace className="h-32" label="Ad Space (Sidebar)" />
 
-        <div className="flex gap-3 mt-auto">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[400px] flex flex-col flex-1">
+          <Editor t={t} />
+
+          {/* Ad Placeholder 2 (Inside Form Flow) */}
+          {SHOW_ADS && (
+            <div className="mt-8 pt-8 border-t border-dashed border-gray-200">
+              <AdSpace className="h-20" label="Ad Space (In-Flow)" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3">
           <button
             disabled={currentStep === 0}
             onClick={() => setStep(Math.max(0, currentStep - 1))}
@@ -145,88 +154,71 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         </div>
       </div>
 
-      {/* Center/Right: Content Area */}
+      {/* Right Side: Preview (Always visible) */}
       <div className="flex-1 flex flex-col gap-6">
-        {/* Editor Form View */}
-        {currentStep < maxStep && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[500px] flex flex-col">
-            <Editor t={t} />
-
-            {/* Ad Placeholder 2 (Inside Form Flow) */}
-            {SHOW_ADS && (
-              <div className="mt-8 pt-8 border-t border-dashed border-gray-200">
-                <AdSpace className="h-20" label="Ad Space (In-Flow)" />
+        {/* Action Bar - Download & Template Selection */}
+        <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm no-print sticky top-[4.5rem] z-30 transition-all">
+          <div className="space-y-4">
+            {/* Download Actions */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <Download size={18} className="text-blue-600" />
+                Download
+              </h3>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handlePdfExport}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+                  title="Export as PDF (ATS-friendly, single page)"
+                >
+                  <Printer size={16} /> PDF
+                </button>
+                <button
+                  onClick={handleDocxExport}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-all"
+                >
+                  <FileText size={16} /> Word
+                </button>
+                <button
+                  onClick={handleLatexExport}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all"
+                >
+                  <Code size={16} /> LaTeX
+                </button>
               </div>
-            )}
-          </div>
-        )}
+            </div>
 
-        {/* Preview View */}
-        <div className={`${currentStep === maxStep ? "block" : "hidden md:block"}`}>
-          {/* Action Bar - Download & Template Selection */}
-          <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm no-print sticky top-[4.5rem] z-30 transition-all">
-            <div className="space-y-4">
-              {/* Download Actions */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Download size={18} className="text-blue-600" />
-                  Download
-                </h3>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            {/* Template Selection */}
+            <div className="pt-3 border-t border-gray-100">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                {t.actions.changeTemplate}
+              </p>
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {templates.map((tmpl) => (
                   <button
-                    onClick={handlePdfExport}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                    title="Export as PDF (ATS-friendly, single page)"
+                    key={tmpl.id}
+                    onClick={() => setTemplateId(tmpl.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                      resume.templateId === tmpl.id
+                        ? "bg-slate-900 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                   >
-                    <Printer size={16} /> PDF
+                    {tmpl.name}
                   </button>
-                  <button
-                    onClick={handleDocxExport}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-all"
-                  >
-                    <FileText size={16} /> Word
-                  </button>
-                  <button
-                    onClick={handleLatexExport}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all"
-                  >
-                    <Code size={16} /> LaTeX
-                  </button>
-                </div>
-              </div>
-
-              {/* Template Selection */}
-              <div className="pt-3 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                  {t.actions.changeTemplate}
-                </p>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {templates.map((tmpl) => (
-                    <button
-                      key={tmpl.id}
-                      onClick={() => setTemplateId(tmpl.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
-                        resume.templateId === tmpl.id
-                          ? "bg-slate-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {tmpl.name}
-                    </button>
-                  ))}
-                </div>
+                ))}
               </div>
             </div>
           </div>
-
-          {/* The Resume Paper */}
-          <div className="overflow-auto pb-10 print:pb-0">
-            <Preview t={t} />
-          </div>
-
-          {/* Ad Placeholder 3 (Bottom) */}
-          <AdSpace className="h-24" label="Ad Space (Bottom Banner)" />
         </div>
+
+        {/* The Resume Paper */}
+        <div className="overflow-auto pb-10 print:pb-0">
+          <Preview t={t} />
+        </div>
+
+        {/* Ad Placeholder 3 (Bottom) */}
+        <AdSpace className="h-24" label="Ad Space (Bottom Banner)" />
       </div>
     </div>
   )
