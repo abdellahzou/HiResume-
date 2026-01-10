@@ -44,19 +44,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     const safeName = resume.personalInfo.fullName.replace(/[^a-z0-9]/gi, "_").substring(0, 20)
     document.title = safeName ? `Resume_${safeName}` : "Resume"
 
-    // A4 dimensions: 210mm width x 297mm height
-    // At 96 DPI: ~794px width x ~1123px height
-    const a4HeightPx = 1122
-    const contentHeight = element.scrollHeight
-
-    let scale = 1
-    if (contentHeight > a4HeightPx) {
-      // Reduce scale to fit on one page with small margin
-      scale = (a4HeightPx * 0.95) / contentHeight
-      scale = Math.max(scale, 0.75) // Minimum 75% scale for readability
-    }
-
-    document.documentElement.style.setProperty("--print-scale", scale.toString())
     window.print()
     document.title = originalTitle
   }
