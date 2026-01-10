@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useRef, useEffect } from "react"
 import { useResumeStore } from "../store"
 import type { Translation, TemplateId } from "../types"
 import { Editor } from "./Editor"
@@ -8,7 +9,22 @@ import { Preview } from "./Preview"
 import { AdSpace } from "./AdSpace"
 import { SHOW_ADS } from "../constants"
 import { generateLatex, generateDocx, downloadFile } from "../utils"
-import { ChevronRight, ChevronLeft, Printer, Code, FileText, Download } from "lucide-react"
+import {
+  User,
+  Briefcase,
+  FolderGit2,
+  GraduationCap,
+  Award,
+  Zap,
+  Eye,
+  ChevronRight,
+  ChevronLeft,
+  Printer,
+  Code,
+  FileText,
+  Download,
+  CheckCircle2,
+} from "lucide-react"
 
 interface BuilderProps {
   t: Translation
@@ -16,15 +32,16 @@ interface BuilderProps {
 
 export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore()
+  const stepperRef = useRef<HTMLDivElement>(null)
 
   const steps = [
-    { id: 0, label: t.steps.personal },
-    { id: 1, label: t.steps.experience },
-    { id: 2, label: t.steps.projects },
-    { id: 3, label: t.steps.education },
-    { id: 4, label: t.steps.certifications },
-    { id: 5, label: t.steps.skills },
-    { id: 6, label: t.steps.preview },
+    { id: 0, label: t.steps.personal, icon: User },
+    { id: 1, label: t.steps.experience, icon: Briefcase },
+    { id: 2, label: t.steps.projects, icon: FolderGit2 },
+    { id: 3, label: t.steps.education, icon: GraduationCap },
+    { id: 4, label: t.steps.certifications, icon: Award },
+    { id: 5, label: t.steps.skills, icon: Zap },
+    { id: 6, label: t.steps.preview, icon: Eye },
   ]
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -35,6 +52,16 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: "creative", name: "Creative" },
     { id: "executive", name: "Executive" },
   ]
+
+  useEffect(() => {
+    if (stepperRef.current) {
+      const activeBtn = stepperRef.current.querySelector('[data-active="true"]')
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+      }
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [currentStep])
 
   const handlePdfExport = () => {
     const element = document.getElementById("resume-preview")
@@ -66,31 +93,42 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
       <div
         className={`w-full md:w-1/3 flex flex-col gap-6 no-print ${currentStep === maxStep ? "hidden md:flex" : ""}`}
       >
-        {/* Progress Steps */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex flex-col gap-1">
-            {steps.map((step) => (
-              <button
-                key={step.id}
-                onClick={() => setStep(step.id)}
-                className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  currentStep === step.id
-                    ? "bg-blue-100 text-blue-700 border-l-4 border-blue-600"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <span>{step.label}</span>
-                {currentStep === step.id && <ChevronRight size={16} />}
-              </button>
-            ))}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl shadow-sm border border-blue-200">
+          <h3 className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4 px-2">Build Your Resume</h3>
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" ref={stepperRef}>
+            {steps.map((step, index) => {
+              const Icon = step.icon
+              const isActive = currentStep === step.id
+              const isCompleted = currentStep > step.id
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setStep(step.id)}
+                  data-active={isActive}
+                  className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0 ${
+                    isActive
+                      ? "bg-white text-blue-600 shadow-md ring-2 ring-blue-300"
+                      : isCompleted
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "bg-white text-gray-500 hover:bg-gray-50 border border-gray-200"
+                  }`}
+                >
+                  <div className="relative">
+                    <Icon size={18} />
+                    {isCompleted && <CheckCircle2 size={12} className="absolute -top-1 -right-1 fill-current" />}
+                  </div>
+                  <span className="text-[10px] leading-tight">{step.label}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Ad Placeholder 1 - Sidebar */}
         <AdSpace className="h-32" label="Ad Space (Sidebar)" />
 
-        {/* Navigation Controls */}
-        <div className="flex justify-between gap-3 mt-auto">
+        <div className="flex gap-3 mt-auto">
           <button
             disabled={currentStep === 0}
             onClick={() => setStep(Math.max(0, currentStep - 1))}
@@ -100,7 +138,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
           </button>
           <button
             onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
           >
             {currentStep === maxStep ? t.nav.preview : t.actions.next} <ChevronRight size={16} />
           </button>
