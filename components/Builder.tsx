@@ -42,6 +42,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     if (stepperRef.current) {
       const activeBtn = stepperRef.current.querySelector('[data-active="true"]')
       if (activeBtn) {
+        // block: "nearest" ensures we don't scroll the whole page, only the container
         activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
       }
     }
@@ -69,10 +70,13 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
   return (
     <div className="flex flex-col w-full h-screen bg-gray-50 overflow-hidden">
-      {/* FIXED HEADER */}
-      <div className="bg-white border-b border-gray-200 p-4 md:p-6 z-40 no-print flex-none">
-        {/* Step Indicators */}
-        <div className="flex items-center justify-center gap-4 mb-6 px-2" ref={stepperRef}>
+      {/* HEADER SECTION: Fixed at top */}
+      <div className="bg-white border-b border-gray-200 py-4 md:py-6 z-40 no-print flex-none w-full overflow-hidden">
+        {/* Step Circles - Scrollable container that doesn't push the page */}
+        <div 
+          className="flex items-center justify-start md:justify-center gap-4 mb-4 px-6 overflow-x-auto no-scrollbar scroll-smooth" 
+          ref={stepperRef}
+        >
           {steps.map((step, index) => {
             const isActive = currentStep === step.id
             const isCompleted = currentStep > step.id
@@ -94,20 +98,20 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 </button>
 
                 {index < steps.length - 1 && (
-                  <div className={`w-8 h-0.5 transition-all ${isCompleted ? "bg-slate-700" : "bg-gray-300"}`} />
+                  <div className={`w-8 md:w-12 h-0.5 flex-shrink-0 transition-all ${isCompleted ? "bg-slate-700" : "bg-gray-300"}`} />
                 )}
               </div>
             )
           })}
         </div>
 
-        {/* Step Labels Row */}
-        <div className="flex items-center justify-center gap-4 overflow-x-auto pb-2 scrollbar-hide px-2">
+        {/* Step Labels Row - Scrollable container */}
+        <div className="flex items-center justify-start md:justify-center gap-4 overflow-x-auto no-scrollbar px-6">
           {steps.map((step) => (
             <button
               key={step.id}
               onClick={() => setStep(step.id)}
-              className={`text-xs md:text-sm font-semibold whitespace-nowrap px-2 py-1 transition-all ${
+              className={`text-xs md:text-sm font-semibold whitespace-nowrap px-2 py-1 transition-all flex-shrink-0 ${
                 currentStep === step.id
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : currentStep > step.id
@@ -121,108 +125,99 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA (SCROLLABLE COLUMNS) */}
+      {/* MAIN LAYOUT: Split Screen */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         
-        {/* Left Side: Editor Form (Independent Scroll) */}
-        <div className="w-full lg:w-1/3 flex flex-col no-print border-r border-gray-200 overflow-y-auto p-4 md:p-6 bg-white/50">
-          <div className="flex flex-col gap-6 min-h-full">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex-1">
+        {/* Left Sidebar: Editor (Independent Scroll) */}
+        <div className="w-full lg:w-[400px] xl:w-[450px] flex flex-col no-print border-r border-gray-200 bg-white overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
+            <div className="flex flex-col gap-6">
               <Editor t={t} />
-
+              
               {SHOW_ADS && (
-                <div className="mt-8 pt-8 border-t border-dashed border-gray-200">
+                <div className="mt-4 pt-6 border-t border-dashed border-gray-200">
                   <AdSpace className="h-20" label="Ad Space (In-Form)" />
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Navigation Buttons (Sticky at the bottom of the column) */}
-            <div className="flex gap-3 sticky bottom-0 bg-gray-50 lg:bg-transparent pt-4 pb-2">
-              <button
-                disabled={currentStep === 0}
-                onClick={() => setStep(Math.max(0, currentStep - 1))}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg text-sm hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronLeft size={18} />
-                {t.actions.back}
-              </button>
-              <button
-                onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg text-sm hover:bg-blue-700 transition-all shadow-sm"
-              >
-                {currentStep === maxStep ? t.nav.preview : t.actions.next}
-                <ChevronRight size={18} />
-              </button>
-            </div>
+          {/* Nav Buttons: Fixed at bottom of sidebar */}
+          <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3 flex-none">
+            <button
+              disabled={currentStep === 0}
+              onClick={() => setStep(Math.max(0, currentStep - 1))}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg text-sm hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft size={18} />
+              {t.actions.back}
+            </button>
+            <button
+              onClick={() => setStep(Math.min(maxStep, currentStep + 1))}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg text-sm hover:bg-blue-700 transition-all shadow-sm"
+            >
+              {currentStep === maxStep ? t.nav.preview : t.actions.next}
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
 
-        {/* Right Side: Preview & Download (Independent Scroll) */}
-        <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 bg-gray-100">
-          <div className="max-w-4xl mx-auto w-full flex flex-col h-full gap-4">
-            {/* Download Bar (Fixed within this column) */}
-            <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex-none">
-              <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Download size={18} className="text-blue-600" />
-                  Download
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={handlePdfExport}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all"
-                  >
-                    <Printer size={16} /> PDF
-                  </button>
-                  <button
-                    onClick={handleDocxExport}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-all"
-                  >
-                    <FileText size={16} /> Word
-                  </button>
-                  <button
-                    onClick={handleLatexExport}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all"
-                  >
-                    <Code size={16} /> LaTeX
-                  </button>
+        {/* Right Content: Preview (Independent Scroll) */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-100/50">
+          {/* Internal wrapper to handle spacing and centering */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <div className="max-w-4xl mx-auto flex flex-col gap-6">
+              
+              {/* Download & Template Bar */}
+              <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex-none">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                      <Download size={18} className="text-blue-600" />
+                      Download
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={handlePdfExport} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all">
+                        <Printer size={16} /> PDF
+                      </button>
+                      <button onClick={handleDocxExport} className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-all">
+                        <FileText size={16} /> Word
+                      </button>
+                      <button onClick={handleLatexExport} className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all">
+                        <Code size={16} /> LaTeX
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="md:border-l md:pl-6 border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      {t.actions.changeTemplate}
+                    </p>
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-[300px]">
+                      {templates.map((tmpl) => (
+                        <button
+                          key={tmpl.id}
+                          onClick={() => setTemplateId(tmpl.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                            resume.templateId === tmpl.id
+                              ? "bg-slate-900 text-white shadow-md"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {tmpl.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Template Selection */}
-              <div className="pt-3 border-t border-gray-100 mt-3">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                  {t.actions.changeTemplate}
-                </p>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {templates.map((tmpl) => (
-                    <button
-                      key={tmpl.id}
-                      onClick={() => setTemplateId(tmpl.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
-                        resume.templateId === tmpl.id
-                          ? "bg-slate-900 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {tmpl.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Resume Preview (Scrolls internally) */}
-            <div className="flex-1 overflow-y-auto rounded-xl shadow-lg bg-white no-scrollbar print:overflow-visible">
-              <div className="min-w-fit flex justify-center bg-white">
+              {/* Resume Sheet */}
+              <div className="bg-white shadow-2xl ring-1 ring-gray-200 min-h-[1100px] mb-8">
                 <Preview t={t} />
               </div>
-            </div>
 
-            {/* Bottom Ad (Fixed within column) */}
-            <div className="flex-none">
-              <AdSpace className="h-20" label="Ad Space (Bottom)" />
+              {SHOW_ADS && <AdSpace className="h-24 mb-4" label="Ad Space (Bottom)" />}
             </div>
           </div>
         </div>
