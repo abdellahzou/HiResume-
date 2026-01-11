@@ -1,15 +1,15 @@
+
 import React from 'react';
 import { useResumeStore } from '../store';
 import { Translation } from '../types';
 import { Input, TextArea } from './ui/Input';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Star } from 'lucide-react';
 
 interface EditorProps {
   t: Translation;
 }
 
-// Helper components moved outside to ensure they are treated as valid React components with key props support
-
+// Helper components
 const SectionTitle = ({ title, subTitle }: { title: string, subTitle?: string }) => (
   <div className="mb-6 px-1">
     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
@@ -66,6 +66,11 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     addSkill,
     updateSkill,
     removeSkill,
+    // --- NEW ACTIONS ---
+    setCustomSectionTitle,
+    addCustomItem,
+    updateCustomItem,
+    removeCustomItem,
   } = useResumeStore();
 
   // Step 0: Personal Info
@@ -132,7 +137,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         <SectionTitle title={t.steps.experience} subTitle="List your work history, starting with the most recent." />
-        
         <div className="space-y-4">
           {resume.experience.map((exp) => (
             <CardItem key={exp.id} onRemove={() => removeExperience(exp.id)}>
@@ -190,7 +194,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
             </CardItem>
           ))}
         </div>
-
         {resume.experience.length === 0 && <EmptyState message="No experience added yet." />}
         <AddButton onClick={addExperience} label={t.actions.add} />
       </div>
@@ -202,7 +205,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         <SectionTitle title={t.steps.projects} subTitle="Highlight key projects to demonstrate your skills." />
-        
         <div className="space-y-4">
           {resume.projects.map((proj) => (
             <CardItem key={proj.id} onRemove={() => removeProject(proj.id)}>
@@ -231,7 +233,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
             </CardItem>
           ))}
         </div>
-
         {resume.projects.length === 0 && <EmptyState message="No projects added yet." />}
         <AddButton onClick={addProject} label={t.actions.add} />
       </div>
@@ -243,7 +244,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         <SectionTitle title={t.steps.education} subTitle="Add your academic background." />
-        
         <div className="space-y-4">
           {resume.education.map((edu) => (
             <CardItem key={edu.id} onRemove={() => removeEducation(edu.id)}>
@@ -276,7 +276,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
             </CardItem>
           ))}
         </div>
-
         {resume.education.length === 0 && <EmptyState message="No education added yet." />}
         <AddButton onClick={addEducation} label={t.actions.add} />
       </div>
@@ -288,7 +287,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         <SectionTitle title={t.steps.certifications} subTitle="Certificates, awards, or other achievements." />
-        
         <div className="space-y-4">
           {resume.certifications.map((cert) => (
             <CardItem key={cert.id} onRemove={() => removeCertification(cert.id)}>
@@ -315,7 +313,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
             </CardItem>
           ))}
         </div>
-
         {resume.certifications.length === 0 && <EmptyState message="No certifications added yet." />}
         <AddButton onClick={addCertification} label={t.actions.add} />
       </div>
@@ -327,7 +324,6 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         <SectionTitle title={t.steps.skills} subTitle="List your technical and soft skills." />
-        
         <div className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] border border-slate-100">
           <div className="space-y-3">
             {resume.skills.map((skill) => (
@@ -354,9 +350,91 @@ export const Editor: React.FC<EditorProps> = ({ t }) => {
               </div>
             ))}
           </div>
-          
           <AddButton onClick={addSkill} label={t.actions.add} />
         </div>
+      </div>
+    );
+  }
+
+  // --- NEW STEP 6: CUSTOM SECTION ---
+  if (currentStep === 6) {
+    return (
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
+        <SectionTitle 
+          title={resume.customSectionTitle || "Custom Section"} 
+          subTitle="Add your own section for Volunteering, Publications, Speaking, etc." 
+        />
+        
+        {/* Title Editor */}
+        <div className="bg-white p-5 rounded-2xl shadow-[0_2px_12px_-3px_rgba(0,0,0,0.08)] border border-slate-100 mb-6">
+           <Input
+              label="Section Title"
+              value={resume.customSectionTitle}
+              onChange={(e) => setCustomSectionTitle(e.target.value)}
+              placeholder="e.g. Volunteering, Publications, Awards"
+            />
+        </div>
+
+        <div className="space-y-4">
+          {resume.customItems?.map((item) => (
+            <CardItem key={item.id} onRemove={() => removeCustomItem(item.id)}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                <Input
+                  label="Name / Role / Title"
+                  value={item.name}
+                  onChange={(e) => updateCustomItem(item.id, { name: e.target.value })}
+                  placeholder="e.g. Volunteer"
+                />
+                <Input
+                  label="City / Location (Optional)"
+                  value={item.city}
+                  onChange={(e) => updateCustomItem(item.id, { city: e.target.value })}
+                  placeholder="e.g. London"
+                />
+                <Input
+                  label={t.labels.startDate}
+                  type="month"
+                  value={item.startDate}
+                  onChange={(e) => updateCustomItem(item.id, { startDate: e.target.value })}
+                />
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    <Input
+                      label={t.labels.endDate}
+                      type="month"
+                      value={item.endDate}
+                      onChange={(e) => updateCustomItem(item.id, { endDate: e.target.value })}
+                      disabled={item.current}
+                      className={item.current ? 'opacity-50' : ''}
+                    />
+                  </div>
+                  <div className="mb-3 h-[46px] flex items-center bg-slate-50 px-3 rounded-xl ring-1 ring-slate-200">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={item.current}
+                        onChange={(e) => updateCustomItem(item.id, { current: e.target.checked })}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      {t.labels.present}
+                    </label>
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <TextArea
+                    label={t.labels.description}
+                    value={item.description}
+                    onChange={(e) => updateCustomItem(item.id, { description: e.target.value })}
+                    placeholder={t.placeholders.description}
+                  />
+                </div>
+              </div>
+            </CardItem>
+          ))}
+        </div>
+
+        {(!resume.customItems || resume.customItems.length === 0) && <EmptyState message="No custom items added yet." />}
+        <AddButton onClick={addCustomItem} label={t.actions.add} />
       </div>
     );
   }
