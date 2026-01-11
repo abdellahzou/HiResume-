@@ -728,7 +728,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       // Changed factor to 0.9 (assuming 10% shrinkage)
       // This makes the perceived height TALLER, so the remaining empty space is SMALLER.
       // Smaller empty space = Less Spacing Added.
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.7 : contentHeight;
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.99 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
         // Content too big: Shrink
