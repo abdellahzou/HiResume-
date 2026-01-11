@@ -19,6 +19,8 @@ export const INITIAL_RESUME_STATE: ResumeData = {
   education: [],
   certifications: [],
   skills: [],
+  customSectionTitle: '',
+  customItems: [],
 };
 
 export const TRANSLATIONS: Record<Language, Translation> = {
