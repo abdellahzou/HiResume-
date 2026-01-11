@@ -906,7 +906,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       const contentHeight = containerRef.current.scrollHeight;
 
       // Mobile print prediction: 
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.81 : contentHeight;
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.82 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
         // Content too big: Shrink
