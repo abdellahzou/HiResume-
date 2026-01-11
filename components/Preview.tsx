@@ -1,4 +1,4 @@
---- START OF FILE Preview.tsx ---
+//--- START OF FILE Preview.tsx ---
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useResumeStore } from '../store';
