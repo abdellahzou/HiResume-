@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ResumeData, Experience, Education, Skill, Project, Certification, TemplateId } from './types';
+import { ResumeData, Experience, Education, Skill, Project, Certification, TemplateId, CustomItem } from './types';
 import { INITIAL_RESUME_STATE } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -29,6 +29,12 @@ interface ResumeStore {
   addSkill: () => void;
   updateSkill: (id: string, data: Partial<Skill>) => void;
   removeSkill: (id: string) => void;
+
+  // --- NEW CUSTOM SECTION ACTIONS ---
+  setCustomSectionTitle: (title: string) => void;
+  addCustomItem: () => void;
+  updateCustomItem: (id: string, data: Partial<CustomItem>) => void;
+  removeCustomItem: (id: string) => void;
   
   setStep: (step: number) => void;
   resetResume: () => void;
@@ -203,6 +209,50 @@ export const useResumeStore = create<ResumeStore>()(
             skills: state.resume.skills.filter((skill) => skill.id !== id),
           },
         })),
+
+      // --- NEW CUSTOM SECTION IMPLEMENTATION ---
+      setCustomSectionTitle: (title) =>
+        set((state) => ({
+          resume: { ...state.resume, customSectionTitle: title },
+        })),
+
+      addCustomItem: () =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            customItems: [
+              ...(state.resume.customItems || []), // Safety check for existing saves
+              {
+                id: uuidv4(),
+                name: '',
+                city: '',
+                startDate: '',
+                endDate: '',
+                current: false,
+                description: '',
+              },
+            ],
+          },
+        })),
+
+      updateCustomItem: (id, data) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            customItems: state.resume.customItems.map((item) =>
+              item.id === id ? { ...item, ...data } : item
+            ),
+          },
+        })),
+
+      removeCustomItem: (id) =>
+        set((state) => ({
+          resume: {
+            ...state.resume,
+            customItems: state.resume.customItems.filter((item) => item.id !== id),
+          },
+        })),
+
       setStep: (step) => set({ currentStep: step }),
       resetResume: () => set({ resume: INITIAL_RESUME_STATE, currentStep: 0 }),
     }),
