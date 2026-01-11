@@ -741,7 +741,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         // Divisor 1000 slows down the expansion significantly
         const expansionFactor = 1 + (emptySpace / 600); 
         // Cap the max spacing to 1.4x to prevent explosion
-        setSpacingScale(Math.min(1.4, expansionFactor));
+        setSpacingScale(Math.min(2, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
