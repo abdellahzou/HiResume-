@@ -714,7 +714,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     if (!containerRef.current) return;
 
     // Use a safe A4 Height (1123px is standard, we use 1090 for safety buffer)
-    const TARGET_HEIGHT = 1090; 
+    const TARGET_HEIGHT = 1110; 
     const isMobile = window.innerWidth < 800; 
 
     setZoomScale(1);
