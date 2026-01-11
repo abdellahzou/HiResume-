@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -33,7 +34,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: 3, label: t.steps.education },
     { id: 4, label: t.steps.certifications },
     { id: 5, label: t.steps.skills },
-    { id: 6, label: t.steps.preview },
+    { id: 6, label: "Custom" }, // Added Custom Section
+    { id: 7, label: t.steps.preview }, // Shifted Preview to 7
   ]
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -115,7 +117,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             </h1>
           </div>
 
-          {currentStep < 6 ? (
+          {/* CHANGED: Condition increased to 7 to include Step 6 (Custom) */}
+          {currentStep < 7 ? (
             <div className="space-y-6">
               <Editor t={t} />
               {SHOW_ADS && (
@@ -180,7 +183,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             Back
           </button>
           <button
-            onClick={() => setStep(Math.min(6, currentStep + 1))}
+            onClick={() => setStep(Math.min(7, currentStep + 1))}
             className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold"
           >
             Next Step
@@ -251,10 +254,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               <ChevronLeft size={16} /> Previous
             </button>
             <button
-              onClick={() => setStep(Math.min(6, currentStep + 1))}
+              onClick={() => setStep(Math.min(7, currentStep + 1))}
               className="w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
-              {currentStep === 6 ? "Finish" : "Next"} <ChevronRight size={16} />
+              {currentStep === 7 ? "Finish" : "Next"} <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -271,7 +274,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               </p>
             </div>
 
-            {currentStep < 6 ? (
+            {/* CHANGED: Condition increased to 7 to include Step 6 (Custom) */}
+            {currentStep < 7 ? (
               <div className="space-y-6">
                 <div className="bg-white rounded-lg border p-6">
                   <Editor t={t} />
