@@ -32,7 +32,7 @@ const dynamicStyles = {
 
 // --- TEMPLATE 1: MODERN ---
 const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-10 font-sans text-slate-800 print:p-8 h-full flex flex-col">
+  <div className="p-10 font-sans text-slate-800 print:p-8">
     <header className="border-b-2 border-slate-800 pb-6 mb-8 print:pb-3 print:mb-4">
       <h1 className="text-4xl font-extrabold uppercase tracking-tight text-slate-900 mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
@@ -48,109 +48,106 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
       </div>
     </header>
 
-    {/* Added justify-between to force spread if spacing is slightly off */}
-    <div className="content-flow flex-1 flex flex-col justify-between">
-      <div className="flex-1 flex flex-col gap-[var(--section-spacing)]">
-        {resume.personalInfo.summary && (
-          <section>
-            <SectionHeader title={t.labels.summary} className="border-b border-gray-300 pb-1" />
-            <p className="text-sm text-justify leading-relaxed text-slate-700 print:leading-tight">{resume.personalInfo.summary}</p>
-          </section>
-        )}
+    <div className="content-flow">
+      {resume.personalInfo.summary && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader title={t.labels.summary} className="border-b border-gray-300 pb-1" />
+          <p className="text-sm text-justify leading-relaxed text-slate-700 print:leading-tight">{resume.personalInfo.summary}</p>
+        </section>
+      )}
 
-        {resume.experience.length > 0 && (
-          <section>
-            <SectionHeader title={t.headings.experience} className="border-b border-gray-300 pb-1" />
-            <div className="space-y-[var(--item-spacing)]">
-              {resume.experience.map((exp) => (
-                <div key={exp.id}>
-                  <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
-                    <h3 className="font-bold text-base text-slate-900">{exp.position}</h3>
-                    <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
-                      {exp.startDate} – {exp.current ? t.labels.present : exp.endDate}
-                    </span>
-                  </div>
-                  <div className="text-sm font-semibold text-slate-600 mb-2 print:mb-1">{exp.company}</div>
-                  <p className="text-sm whitespace-pre-line text-slate-700 leading-relaxed print:leading-tight">{exp.description}</p>
+      {resume.experience.length > 0 && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader title={t.headings.experience} className="border-b border-gray-300 pb-1" />
+          <div className="space-y-[var(--item-spacing)]">
+            {resume.experience.map((exp) => (
+              <div key={exp.id}>
+                <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
+                  <h3 className="font-bold text-base text-slate-900">{exp.position}</h3>
+                  <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+                    {exp.startDate} – {exp.current ? t.labels.present : exp.endDate}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+                <div className="text-sm font-semibold text-slate-600 mb-2 print:mb-1">{exp.company}</div>
+                <p className="text-sm whitespace-pre-line text-slate-700 leading-relaxed print:leading-tight">{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-        {resume.projects.length > 0 && (
-          <section>
-            <SectionHeader title={t.headings.projects} className="border-b border-gray-300 pb-1" />
-            <div className="space-y-[var(--item-spacing)]">
-              {resume.projects.map((proj) => (
-                <div key={proj.id}>
-                  <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
-                    <h3 className="font-bold text-base text-slate-900">{proj.name}</h3>
-                    {proj.link && <span className="text-xs text-blue-600 underline">{proj.link}</span>}
-                  </div>
-                  <p className="text-sm text-slate-700 leading-relaxed print:leading-tight">{proj.description}</p>
+      {resume.projects.length > 0 && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader title={t.headings.projects} className="border-b border-gray-300 pb-1" />
+          <div className="space-y-[var(--item-spacing)]">
+            {resume.projects.map((proj) => (
+              <div key={proj.id}>
+                <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
+                  <h3 className="font-bold text-base text-slate-900">{proj.name}</h3>
+                  {proj.link && <span className="text-xs text-blue-600 underline">{proj.link}</span>}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+                <p className="text-sm text-slate-700 leading-relaxed print:leading-tight">{proj.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-        {resume.education.length > 0 && (
-          <section>
-            <SectionHeader title={t.headings.education} className="border-b border-gray-300 pb-1" />
-            <div className="space-y-[var(--item-spacing)]">
-              {resume.education.map((edu) => (
-                <div key={edu.id}>
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold text-base text-slate-900">{edu.school}</h3>
-                    <span className="text-xs font-medium text-slate-500">
-                      {edu.startDate} – {edu.current ? t.labels.present : edu.endDate}
-                    </span>
-                  </div>
-                  <div className="text-sm text-slate-700">{edu.degree}</div>
+      {resume.education.length > 0 && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader title={t.headings.education} className="border-b border-gray-300 pb-1" />
+          <div className="space-y-[var(--item-spacing)]">
+            {resume.education.map((edu) => (
+              <div key={edu.id}>
+                <div className="flex justify-between items-baseline">
+                  <h3 className="font-bold text-base text-slate-900">{edu.school}</h3>
+                  <span className="text-xs font-medium text-slate-500">
+                    {edu.startDate} – {edu.current ? t.labels.present : edu.endDate}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+                <div className="text-sm text-slate-700">{edu.degree}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-        {resume.certifications.length > 0 && (
-          <section>
-            <SectionHeader title={t.headings.certifications} className="border-b border-gray-300 pb-1" />
-            <div className="space-y-2 print:space-y-1">
-              {resume.certifications.map((cert) => (
-                <div key={cert.id} className="flex justify-between items-baseline text-sm">
-                  <div>
-                    <span className="font-bold text-slate-900">{cert.name}</span>
-                    {cert.issuer && <span className="text-slate-600"> - {cert.issuer}</span>}
-                  </div>
-                  <span className="text-xs text-slate-500">{cert.date}</span>
+      {resume.certifications.length > 0 && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader title={t.headings.certifications} className="border-b border-gray-300 pb-1" />
+          <div className="space-y-2 print:space-y-1">
+            {resume.certifications.map((cert) => (
+              <div key={cert.id} className="flex justify-between items-baseline text-sm">
+                <div>
+                  <span className="font-bold text-slate-900">{cert.name}</span>
+                  {cert.issuer && <span className="text-slate-600"> - {cert.issuer}</span>}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+                <span className="text-xs text-slate-500">{cert.date}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-        {resume.skills.length > 0 && (
-          <section>
-            <SectionHeader title={t.headings.skills} className="border-b border-gray-300 pb-1" />
-            <div className="flex flex-wrap gap-2 print:gap-1">
-              {resume.skills.map((skill) => (
-                <span key={skill.id} className="text-sm bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium print:px-2 print:py-0.5">
-                  {skill.name}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
+      {resume.skills.length > 0 && (
+        <section>
+          <SectionHeader title={t.headings.skills} className="border-b border-gray-300 pb-1" />
+          <div className="flex flex-wrap gap-2 print:gap-1">
+            {resume.skills.map((skill) => (
+              <span key={skill.id} className="text-sm bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium print:px-2 print:py-0.5">
+                {skill.name}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   </div>
 );
 
 // --- TEMPLATE 2: CLASSIC ---
 const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-serif text-slate-900 print:p-8 h-full flex flex-col">
+  <div className="p-12 font-serif text-slate-900 print:p-8">
     <header className="text-center mb-8 border-b-2 border-black pb-6 print:mb-4 print:pb-3">
       <h1 className="text-3xl font-bold uppercase mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
@@ -163,16 +160,16 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    <div className="content-flow flex-1 flex flex-col gap-[var(--section-spacing)]">
+    <div className="content-flow">
       {resume.personalInfo.summary && (
-        <section>
+        <section style={dynamicStyles.section}>
           <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-3 pb-1 print:mb-2">{t.labels.summary}</h2>
           <p className="text-sm text-justify leading-normal print:leading-tight">{resume.personalInfo.summary}</p>
         </section>
       )}
 
       {resume.experience.length > 0 && (
-        <section>
+        <section style={dynamicStyles.section}>
            <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">{t.headings.experience}</h2>
           <div className="space-y-[var(--item-spacing)]">
             {resume.experience.map((exp) => (
@@ -189,7 +186,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       )}
 
       {resume.projects.length > 0 && (
-        <section>
+        <section style={dynamicStyles.section}>
            <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">{t.headings.projects}</h2>
           <div className="space-y-[var(--item-spacing)]">
             {resume.projects.map((proj) => (
@@ -206,7 +203,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       )}
 
       {resume.education.length > 0 && (
-        <section>
+        <section style={dynamicStyles.section}>
           <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">{t.headings.education}</h2>
           <div className="space-y-[var(--item-spacing)]">
             {resume.education.map((edu) => (
@@ -222,7 +219,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       )}
 
       {resume.certifications.length > 0 && (
-        <section>
+        <section style={dynamicStyles.section}>
           <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">{t.headings.certifications}</h2>
           <div className="space-y-[var(--item-spacing)]">
             {resume.certifications.map((cert) => (
@@ -249,7 +246,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
 
 // --- TEMPLATE 3: MINIMAL ---
 const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-sans text-gray-800 print:p-8 h-full flex flex-col">
+  <div className="p-12 font-sans text-gray-800 print:p-8">
     <header className="mb-10 print:mb-4">
       <h1 className="text-4xl font-light tracking-tight text-gray-900 mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
@@ -262,8 +259,8 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 print:gap-4 content-flow flex-1">
-      <div className="md:col-span-1 flex flex-col gap-[var(--section-spacing)]">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 print:gap-4">
+      <div className="md:col-span-1 space-y-[var(--section-spacing)]">
         {resume.education.length > 0 && (
           <section>
             <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4 print:mb-2">{t.headings.education}</h3>
@@ -308,7 +305,7 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
         )}
       </div>
 
-      <div className="md:col-span-3 flex flex-col gap-[var(--section-spacing)]">
+      <div className="md:col-span-3 space-y-[var(--section-spacing)]">
         {resume.personalInfo.summary && (
           <section>
              <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4 print:mb-2">{t.labels.summary}</h3>
@@ -366,7 +363,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
         </p>
       </div>
 
-      <div className="flex flex-col gap-[var(--section-spacing)] text-sm">
+      <div className="space-y-[var(--section-spacing)] text-sm">
         <div>
            <h3 className="font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2 uppercase text-xs print:mb-1">{t.headings.contact}</h3>
            <div className="space-y-2 text-slate-600 print:space-y-1">
@@ -420,16 +417,16 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
     </div>
 
     {/* Main Content */}
-    <div className="w-2/3 p-8 print:p-6 content-flow flex flex-col gap-[var(--section-spacing)]">
+    <div className="w-2/3 p-8 print:p-6 content-flow">
        {resume.personalInfo.summary && (
-         <div>
+         <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-3 print:mb-2">{t.labels.summary}</h3>
             <p className="text-sm text-slate-700 leading-relaxed print:leading-tight">{resume.personalInfo.summary}</p>
          </div>
        )}
 
        {resume.experience.length > 0 && (
-         <div>
+         <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4 print:mb-2">{t.headings.experience}</h3>
             <div className="space-y-[var(--item-spacing)]">
               {resume.experience.map(exp => (
@@ -449,7 +446,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
        )}
 
        {resume.projects.length > 0 && (
-         <div>
+         <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4 print:mb-2">{t.headings.projects}</h3>
             <div className="space-y-[var(--item-spacing)]">
               {resume.projects.map(proj => (
@@ -468,7 +465,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
 
 // --- TEMPLATE 5: CREATIVE ---
 const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="font-sans h-full flex flex-col">
+  <div className="font-sans h-full">
      <header className="bg-slate-900 text-white p-10 print:p-6">
         <h1 className="text-5xl font-bold mb-2 print:text-3xl print:mb-1">{resume.personalInfo.fullName || t.labels.fullName}</h1>
         <p className="text-xl text-blue-300 font-medium tracking-wide mb-6 print:text-base print:mb-3">{resume.personalInfo.title}</p>
@@ -480,7 +477,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
         </div>
      </header>
 
-     <div className="p-10 grid grid-cols-1 gap-[var(--section-spacing)] print:p-6 flex-1">
+     <div className="p-10 grid grid-cols-1 gap-[var(--section-spacing)] print:p-6">
         {resume.personalInfo.summary && (
           <section className="bg-slate-50 p-6 rounded-lg border-l-4 border-blue-500 print:p-4">
              <p className="text-slate-700 text-lg leading-relaxed italic print:text-sm print:leading-tight">"{resume.personalInfo.summary}"</p>
@@ -488,7 +485,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
         )}
 
         <div className="grid grid-cols-3 gap-10 print:gap-4">
-           <div className="col-span-2 flex flex-col gap-[var(--section-spacing)]">
+           <div className="col-span-2 space-y-[var(--section-spacing)]">
               {resume.experience.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6 print:text-lg print:mb-3">
@@ -530,7 +527,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
               )}
            </div>
 
-           <div className="col-span-1 flex flex-col gap-[var(--section-spacing)]">
+           <div className="col-span-1 space-y-[var(--section-spacing)]">
               {resume.skills.length > 0 && (
                 <div>
                    <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2 print:text-base print:mb-2">
@@ -590,7 +587,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
 
 // --- TEMPLATE 6: EXECUTIVE ---
 const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-serif text-slate-800 border-t-8 border-slate-800 print:p-8 h-full flex flex-col">
+  <div className="p-12 font-serif text-slate-800 border-t-8 border-slate-800 print:p-8 h-full">
      <div className="flex justify-between items-start mb-12 print:mb-6">
         <div>
            <h1 className="text-4xl font-bold text-slate-900 mb-2 uppercase tracking-widest print:text-3xl print:mb-1">{resume.personalInfo.fullName || t.labels.fullName}</h1>
@@ -603,15 +600,15 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
         </div>
      </div>
 
-     <div className="content-flow flex-1 flex flex-col gap-[var(--section-spacing)]">
+     <div className="content-flow">
        {resume.personalInfo.summary && (
-          <div className="border-b border-slate-200 pb-6 print:pb-3">
+          <div style={dynamicStyles.section} className="border-b border-slate-200 pb-6 print:pb-3">
              <p className="text-lg leading-relaxed text-slate-700 print:text-base print:leading-tight">{resume.personalInfo.summary}</p>
           </div>
        )}
 
        {resume.experience.length > 0 && (
-         <div>
+         <div style={dynamicStyles.section}>
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 print:mb-3">{t.headings.experience}</h2>
             <div className="space-y-[var(--item-spacing)]">
                {resume.experience.map(exp => (
@@ -632,7 +629,7 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
        )}
 
        {resume.projects.length > 0 && (
-         <div>
+         <div style={dynamicStyles.section}>
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 print:mb-3">{t.headings.projects}</h2>
             <div className="space-y-[var(--item-spacing)]">
                {resume.projects.map(proj => (
@@ -652,7 +649,7 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
        )}
 
        <div className="grid grid-cols-2 gap-12 print:gap-6">
-          <div className="flex flex-col gap-[var(--section-spacing)]">
+          <div className="space-y-[var(--section-spacing)]">
             {resume.education.length > 0 && (
                <div>
                   <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 print:mb-2">{t.headings.education}</h2>
@@ -718,15 +715,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Standard A4 Height at 96 DPI is ~1123px.
-    // However, on mobile, content wraps more (is taller).
-    // In Print, content unwraps (is shorter).
-    // If we calculate based on the mobile height, we under-estimate the spacing needed for print.
-    
-    const TARGET_HEIGHT = 1130; 
-    const isMobile = window.innerWidth < 800; // Mobile Breakpoint
+    // Use a safe A4 Height (1123px is standard, we aim for ~1140 to be safe)
+    const TARGET_HEIGHT = 1140; 
+    const isMobile = window.innerWidth < 800; 
 
-    // Reset initially
     setZoomScale(1);
     setSpacingScale(1);
 
@@ -734,28 +726,20 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       if (!containerRef.current) return;
       const contentHeight = containerRef.current.scrollHeight;
 
-      // PREDICTION LOGIC:
-      // If on mobile, the content height we see is "inflated" by text wrapping.
-      // The actual print height will be roughly 70-80% of this.
-      // We use this 'predicted' shorter height to calculate spacing.
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.70 : contentHeight;
+      // Mobile print prediction: Mobile DOM is taller than Print DOM.
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.75 : contentHeight;
 
-      // CASE 1: Content is too BIG (even after un-wrapping prediction)
       if (perceivedPrintHeight > TARGET_HEIGHT) {
+        // Content too big: Shrink
         const newScale = TARGET_HEIGHT / perceivedPrintHeight;
-        setZoomScale(Math.max(0.6, newScale));
+        setZoomScale(Math.max(0.65, newScale));
         setSpacingScale(1); 
-      } 
-      // CASE 2: Content is too SMALL -> Increase Spacing
-      else {
+      } else {
+        // Content too small: Expand Spacing
         const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
-        
-        // If we have empty space, we multiply spacing.
-        // We use a divisor of 400 (smaller = more aggressive expansion)
-        const expansionFactor = 1 + (emptySpace / 400); 
-        
-        // Cap the spacing to avoid it looking ridiculous (max 3x standard spacing)
-        setSpacingScale(Math.min(3.5, expansionFactor));
+        // Divisor 600 makes expansion gentler to avoid spillover
+        const expansionFactor = 1 + (emptySpace / 600); 
+        setSpacingScale(Math.min(2.5, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
