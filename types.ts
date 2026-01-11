@@ -49,6 +49,17 @@ export interface Skill {
   level: number; // 1-5
 }
 
+// --- NEW INTERFACE ---
+export interface CustomItem {
+  id: string;
+  name: string;      // e.g. "Volunteer Role" or "Publication Title"
+  city: string;      // e.g. "New York, NY"
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
 export type TemplateId = 'modern' | 'classic' | 'minimal' | 'professional' | 'creative' | 'executive';
 
 export interface ResumeData {
@@ -58,17 +69,20 @@ export interface ResumeData {
   education: Education[];
   certifications: Certification[];
   skills: Skill[];
+  // --- NEW FIELDS ---
+  customSectionTitle: string;
+  customItems: CustomItem[];
   templateId: TemplateId;
 }
 
 export interface AtsResult {
   score: number;
   breakdown: {
-    sections: number; // /20
-    keywords: number; // /30
-    formatting: number; // /15
-    skills: number; // /15
-    clarity: number; // /20
+    sections: number;
+    keywords: number;
+    formatting: number;
+    skills: number;
+    clarity: number;
   };
   strengths: string[];
   improvements: string[];
