@@ -714,7 +714,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     if (!containerRef.current) return;
 
     // Use a safe A4 Height (1123px is standard, we use 1090 for safety buffer)
-    const TARGET_HEIGHT = 1110; 
+    const TARGET_HEIGHT = 1123; 
     const isMobile = window.innerWidth < 800; 
 
     setZoomScale(1);
@@ -741,7 +741,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         // Divisor 1000 slows down the expansion significantly
         const expansionFactor = 1 + (emptySpace / 600); 
         // Cap the max spacing to 1.4x to prevent explosion
-        setSpacingScale(Math.min(2, expansionFactor));
+        setSpacingScale(Math.min(2.4, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
