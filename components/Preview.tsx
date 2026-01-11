@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, ResumeData } from '../types';
 import clsx from 'clsx';
@@ -709,7 +709,49 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     executive: ExecutiveTemplate,
   }[resume.templateId];
 
-  // --- AUTO-SIZING LOGIC ---
+  // --- AUTOMATIC SORTING LOGIC (New) ---
+  const sortedResume = useMemo(() => {
+    // Helper function to sort general items (Experience, Education)
+    const sortGeneral = (items: any[]) => {
+      return [...items].sort((a, b) => {
+        // 1. Current Always First
+        if (a.current && !b.current) return -1;
+        if (!a.current && b.current) return 1;
+
+        // 2. Sort by End Date (Descending)
+        // Treat missing dates as old (0)
+        const dateA = new Date(a.endDate || 0).getTime();
+        const dateB = new Date(b.endDate || 0).getTime();
+        
+        // If end dates are different, newest end date first
+        if (dateB !== dateA) return dateB - dateA;
+
+        // 3. Tie-breaker: Start Date (Descending)
+        const startA = new Date(a.startDate || 0).getTime();
+        const startB = new Date(b.startDate || 0).getTime();
+        return startB - startA;
+      });
+    };
+
+    // Helper for certifications (Single Date)
+    const sortCertifications = (items: any[]) => {
+      return [...items].sort((a, b) => {
+         const dateA = new Date(a.date || 0).getTime();
+         const dateB = new Date(b.date || 0).getTime();
+         return dateB - dateA;
+      });
+    };
+
+    return {
+      ...resume,
+      experience: sortGeneral(resume.experience),
+      education: sortGeneral(resume.education),
+      certifications: sortCertifications(resume.certifications)
+    };
+  }, [resume]); // Re-runs only when resume data changes
+
+
+  // --- AUTO-SIZING LOGIC (Preserved from your correct file) ---
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -725,9 +767,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       const contentHeight = containerRef.current.scrollHeight;
 
       // Mobile print prediction: 
-      // Changed factor to 0.9 (assuming 10% shrinkage)
-      // This makes the perceived height TALLER, so the remaining empty space is SMALLER.
-      // Smaller empty space = Less Spacing Added.
       const perceivedPrintHeight = isMobile ? contentHeight * 0.8 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
@@ -738,14 +777,12 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       } else {
         // Content too small: Expand Spacing
         const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
-        // Divisor 1000 slows down the expansion significantly
         const expansionFactor = 1 + (emptySpace / 600); 
-        // Cap the max spacing to 1.4x to prevent explosion
         setSpacingScale(Math.min(2.4, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
-  }, [resume, t]); 
+  }, [sortedResume, t]); // Updated dependency to sortedResume
 
   // Define CSS variables based on calculation
   const layoutStyles = {
@@ -761,7 +798,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       style={layoutStyles}
       className={clsx("a4-page bg-white shadow-lg mx-auto overflow-hidden origin-top", className)}
     >
-      <TemplateComponent resume={resume} t={t} />
+      {/* Pass sortedResume instead of resume */}
+      <TemplateComponent resume={sortedResume} t={t} />
     </div>
   );
 };
