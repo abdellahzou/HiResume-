@@ -1,6 +1,3 @@
-
-"use client"
-
 import type React from "react"
 import { useEffect, useRef } from "react"
 import { useResumeStore } from "../store"
@@ -34,8 +31,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     { id: 3, label: t.steps.education },
     { id: 4, label: t.steps.certifications },
     { id: 5, label: t.steps.skills },
-    { id: 6, label: "Custom" }, // Added Custom Section
-    { id: 7, label: t.steps.preview }, // Shifted Preview to 7
+    { id: 6, label: "Custom" },
+    { id: 7, label: t.steps.preview },
   ]
 
   const templates: { id: TemplateId; name: string }[] = [
@@ -67,6 +64,15 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   }
 
   const progressPercentage = ((currentStep + 1) / steps.length) * 100
+
+  // Helper to handle the primary action button logic
+  const handlePrimaryAction = () => {
+    if (currentStep === 7) {
+      handlePdfExport()
+    } else {
+      setStep(Math.min(7, currentStep + 1))
+    }
+  }
 
   return (
     <>
@@ -117,7 +123,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             </h1>
           </div>
 
-          {/* CHANGED: Condition increased to 7 to include Step 6 (Custom) */}
           {currentStep < 7 ? (
             <div className="space-y-6">
               <Editor t={t} />
@@ -183,10 +188,16 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             Back
           </button>
           <button
-            onClick={() => setStep(Math.min(7, currentStep + 1))}
-            className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold"
+            onClick={handlePrimaryAction}
+            className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
           >
-            Next Step
+            {currentStep === 7 ? (
+              <>
+                <Printer size={18} /> Download PDF
+              </>
+            ) : (
+              "Next Step"
+            )}
           </button>
         </div>
       </div>
@@ -254,10 +265,18 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               <ChevronLeft size={16} /> Previous
             </button>
             <button
-              onClick={() => setStep(Math.min(7, currentStep + 1))}
+              onClick={handlePrimaryAction}
               className="w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
-              {currentStep === 7 ? "Finish" : "Next"} <ChevronRight size={16} />
+              {currentStep === 7 ? (
+                <>
+                  <Printer size={16} /> Download PDF
+                </>
+              ) : (
+                <>
+                  Next <ChevronRight size={16} />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -274,7 +293,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               </p>
             </div>
 
-            {/* CHANGED: Condition increased to 7 to include Step 6 (Custom) */}
             {currentStep < 7 ? (
               <div className="space-y-6">
                 <div className="bg-white rounded-lg border p-6">
