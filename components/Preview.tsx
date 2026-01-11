@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, ResumeData } from '../types';
 import clsx from 'clsx';
-import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award, FolderGit2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award, FolderGit2, Star } from 'lucide-react';
 
 interface PreviewProps {
   t: Translation;
@@ -68,6 +68,30 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
                 </div>
                 <div className="text-sm font-semibold text-slate-600 mb-2 print:mb-1">{exp.company}</div>
                 <p className="text-sm whitespace-pre-line text-slate-700 leading-relaxed print:leading-tight">{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* --- CUSTOM SECTION (MODERN) --- */}
+      {resume.customItems && resume.customItems.length > 0 && (
+        <section style={dynamicStyles.section}>
+          <SectionHeader 
+            title={resume.customSectionTitle || "Custom Section"} 
+            className="border-b border-gray-300 pb-1" 
+          />
+          <div className="space-y-[var(--item-spacing)]">
+            {resume.customItems.map((item) => (
+              <div key={item.id}>
+                <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
+                  <h3 className="font-bold text-base text-slate-900">{item.name}</h3>
+                  <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+                    {item.startDate} – {item.current ? t.labels.present : item.endDate}
+                  </span>
+                </div>
+                {item.city && <div className="text-sm font-semibold text-slate-600 mb-2 print:mb-1">{item.city}</div>}
+                <p className="text-sm whitespace-pre-line text-slate-700 leading-relaxed print:leading-tight">{item.description}</p>
               </div>
             ))}
           </div>
@@ -177,6 +201,26 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
                   <span>{exp.startDate} – {exp.current ? t.labels.present : exp.endDate}</span>
                 </div>
                 <p className="text-sm mt-1 whitespace-pre-line print:leading-tight">{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* --- CUSTOM SECTION (CLASSIC) --- */}
+      {resume.customItems && resume.customItems.length > 0 && (
+        <section style={dynamicStyles.section}>
+           <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">
+             {resume.customSectionTitle || "Custom Section"}
+           </h2>
+          <div className="space-y-[var(--item-spacing)]">
+            {resume.customItems.map((item) => (
+              <div key={item.id}>
+                <div className="flex justify-between font-bold text-sm">
+                  <span>{item.name} {item.city ? `, ${item.city}` : ''}</span>
+                  <span>{item.startDate} – {item.current ? t.labels.present : item.endDate}</span>
+                </div>
+                <p className="text-sm mt-1 whitespace-pre-line print:leading-tight">{item.description}</p>
               </div>
             ))}
           </div>
@@ -327,6 +371,27 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
           </section>
         )}
 
+        {/* --- CUSTOM SECTION (MINIMAL) --- */}
+        {resume.customItems && resume.customItems.length > 0 && (
+          <section>
+            <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-6 print:mb-3">
+              {resume.customSectionTitle || "Custom Section"}
+            </h3>
+            <div className="space-y-[var(--item-spacing)]">
+              {resume.customItems.map((item) => (
+                <div key={item.id} className="relative pl-6 border-l border-gray-200">
+                   <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-gray-200"></div>
+                   <h4 className="font-bold text-gray-900">{item.name}</h4>
+                   <div className="text-sm text-gray-500 mb-2 print:mb-1">
+                     {item.city ? `${item.city} | ` : ''}{item.startDate} - {item.current ? t.labels.present : item.endDate}
+                   </div>
+                   <p className="text-sm text-gray-700 whitespace-pre-line print:leading-tight">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {resume.projects.length > 0 && (
           <section>
             <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-6 print:mb-3">{t.headings.projects}</h3>
@@ -443,6 +508,29 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
          </div>
        )}
 
+       {/* --- CUSTOM SECTION (PROFESSIONAL) --- */}
+       {resume.customItems && resume.customItems.length > 0 && (
+         <div style={dynamicStyles.section}>
+            <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4 print:mb-2">
+              {resume.customSectionTitle || "Custom Section"}
+            </h3>
+            <div className="space-y-[var(--item-spacing)]">
+              {resume.customItems.map(item => (
+                <div key={item.id}>
+                   <div className="flex justify-between items-baseline mb-1 print:mb-0.5">
+                      <h4 className="font-bold text-slate-900 text-md">{item.name}</h4>
+                      <span className="text-xs font-semibold bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                        {item.startDate} - {item.current ? t.labels.present : item.endDate}
+                      </span>
+                   </div>
+                   {item.city && <div className="text-sm font-medium text-slate-600 mb-2 print:mb-1">{item.city}</div>}
+                   <p className="text-sm text-slate-700 whitespace-pre-line print:leading-tight">{item.description}</p>
+                </div>
+              ))}
+            </div>
+         </div>
+       )}
+
        {resume.projects.length > 0 && (
          <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4 print:mb-2">{t.headings.projects}</h3>
@@ -498,6 +586,29 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
                           <div className="text-blue-600 font-medium mb-1">{exp.company}</div>
                           <div className="text-xs text-slate-400 uppercase tracking-widest mb-3 print:mb-1">{exp.startDate} — {exp.current ? t.labels.present : exp.endDate}</div>
                           <p className="text-slate-600 whitespace-pre-line print:leading-tight">{exp.description}</p>
+                       </div>
+                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* --- CUSTOM SECTION (CREATIVE) --- */}
+              {resume.customItems && resume.customItems.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6 print:text-lg print:mb-3">
+                    <span className="w-8 h-8 bg-pink-100 text-pink-600 rounded flex items-center justify-center print:w-6 print:h-6">
+                       <Star size={18} className="print:w-4 print:h-4" />
+                    </span>
+                    {resume.customSectionTitle || "Custom Section"}
+                  </h2>
+                  <div className="space-y-[var(--item-spacing)] border-l-2 border-slate-100 pl-8 ml-4 print:pl-4 print:ml-2">
+                     {resume.customItems.map(item => (
+                       <div key={item.id} className="relative">
+                          <div className="absolute -left-[39px] top-1 w-4 h-4 rounded-full border-2 border-white bg-pink-500 shadow-sm print:-left-[21px] print:w-3 print:h-3"></div>
+                          <h3 className="font-bold text-lg print:text-base">{item.name}</h3>
+                          {item.city && <div className="text-pink-600 font-medium mb-1">{item.city}</div>}
+                          <div className="text-xs text-slate-400 uppercase tracking-widest mb-3 print:mb-1">{item.startDate} — {item.current ? t.labels.present : item.endDate}</div>
+                          <p className="text-slate-600 whitespace-pre-line print:leading-tight">{item.description}</p>
                        </div>
                      ))}
                   </div>
@@ -626,6 +737,30 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
          </div>
        )}
 
+       {/* --- CUSTOM SECTION (EXECUTIVE) --- */}
+       {resume.customItems && resume.customItems.length > 0 && (
+         <div style={dynamicStyles.section}>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 print:mb-3">
+              {resume.customSectionTitle || "Custom Section"}
+            </h2>
+            <div className="space-y-[var(--item-spacing)]">
+               {resume.customItems.map(item => (
+                 <div key={item.id} className="grid grid-cols-4 gap-6 print:gap-3">
+                    <div className="col-span-1 text-right">
+                       <div className="font-bold text-slate-900">{item.startDate}</div>
+                       <div className="text-sm text-slate-500">{item.endDate}</div>
+                    </div>
+                    <div className="col-span-3">
+                       <h3 className="text-xl font-bold text-slate-900 mb-1 print:text-base print:mb-0.5">{item.name}</h3>
+                       {item.city && <div className="text-slate-600 font-medium italic mb-3 print:mb-1">{item.city}</div>}
+                       <p className="text-slate-700 leading-relaxed font-sans text-sm print:leading-tight">{item.description}</p>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+       )}
+
        {resume.projects.length > 0 && (
          <div style={dynamicStyles.section}>
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 print:mb-3">{t.headings.projects}</h2>
@@ -709,21 +844,20 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     executive: ExecutiveTemplate,
   }[resume.templateId];
 
-  // --- AUTOMATIC SORTING LOGIC (New) ---
+  // --- AUTOMATIC SORTING LOGIC ---
   const sortedResume = useMemo(() => {
-    // Helper function to sort general items (Experience, Education)
+    // Helper function to sort general items (Experience, Education, Custom)
     const sortGeneral = (items: any[]) => {
+      if (!items) return [];
       return [...items].sort((a, b) => {
         // 1. Current Always First
         if (a.current && !b.current) return -1;
         if (!a.current && b.current) return 1;
 
         // 2. Sort by End Date (Descending)
-        // Treat missing dates as old (0)
         const dateA = new Date(a.endDate || 0).getTime();
         const dateB = new Date(b.endDate || 0).getTime();
         
-        // If end dates are different, newest end date first
         if (dateB !== dateA) return dateB - dateA;
 
         // 3. Tie-breaker: Start Date (Descending)
@@ -733,8 +867,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       });
     };
 
-    // Helper for certifications (Single Date)
     const sortCertifications = (items: any[]) => {
+      if (!items) return [];
       return [...items].sort((a, b) => {
          const dateA = new Date(a.date || 0).getTime();
          const dateB = new Date(b.date || 0).getTime();
@@ -742,20 +876,25 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       });
     };
 
+    // Cast resume as any to allow accessing customItems if they are not yet in the generic Type definition
+    const safeResume = resume as any;
+
     return {
       ...resume,
       experience: sortGeneral(resume.experience),
       education: sortGeneral(resume.education),
+      // Sort customItems if they exist, otherwise return empty array
+      customItems: sortGeneral(safeResume.customItems || []),
       certifications: sortCertifications(resume.certifications)
     };
-  }, [resume]); // Re-runs only when resume data changes
+  }, [resume]);
 
 
-  // --- AUTO-SIZING LOGIC (Preserved from your correct file) ---
+  // --- AUTO-SIZING LOGIC ---
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Use a safe A4 Height (1123px is standard, we use 1090 for safety buffer)
+    // Use a safe A4 Height
     const TARGET_HEIGHT = 1123; 
     const isMobile = window.innerWidth < 800; 
 
@@ -767,7 +906,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       const contentHeight = containerRef.current.scrollHeight;
 
       // Mobile print prediction: 
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.81 : contentHeight;
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.79 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
         // Content too big: Shrink
@@ -782,9 +921,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         setZoomScale(1); 
       }
     }, 100);
-  }, [sortedResume, t]); // Updated dependency to sortedResume
+  }, [sortedResume, t]); 
 
-  // Define CSS variables based on calculation
   const layoutStyles = {
     '--section-spacing': `${2 * spacingScale}rem`,
     '--item-spacing': `${0.75 * spacingScale}rem`,
@@ -798,7 +936,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       style={layoutStyles}
       className={clsx("a4-page bg-white shadow-lg mx-auto overflow-hidden origin-top", className)}
     >
-      {/* Pass sortedResume instead of resume */}
       <TemplateComponent resume={sortedResume} t={t} />
     </div>
   );
