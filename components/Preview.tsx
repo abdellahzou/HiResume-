@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, ResumeData } from '../types';
@@ -715,8 +713,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Use a safe A4 Height (1123px is standard, we aim for ~1140 to be safe)
-    const TARGET_HEIGHT = 1140; 
+    // Use a safe A4 Height (1123px is standard, we use 1090 for safety buffer)
+    const TARGET_HEIGHT = 1090; 
     const isMobile = window.innerWidth < 800; 
 
     setZoomScale(1);
@@ -726,8 +724,11 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       if (!containerRef.current) return;
       const contentHeight = containerRef.current.scrollHeight;
 
-      // Mobile print prediction: Mobile DOM is taller than Print DOM.
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.75 : contentHeight;
+      // Mobile print prediction: 
+      // Changed factor to 0.9 (assuming 10% shrinkage)
+      // This makes the perceived height TALLER, so the remaining empty space is SMALLER.
+      // Smaller empty space = Less Spacing Added.
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.9 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
         // Content too big: Shrink
@@ -737,9 +738,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       } else {
         // Content too small: Expand Spacing
         const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
-        // Divisor 600 makes expansion gentler to avoid spillover
-        const expansionFactor = 1 + (emptySpace / 600); 
-        setSpacingScale(Math.min(2.5, expansionFactor));
+        // Divisor 1000 slows down the expansion significantly
+        const expansionFactor = 1 + (emptySpace / 1000); 
+        // Cap the max spacing to 1.4x to prevent explosion
+        setSpacingScale(Math.min(1.4, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
