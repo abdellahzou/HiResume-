@@ -11,27 +11,14 @@
         gtag('js', new Date());
         gtag('config', 'G-9V7KQW2BTX');
     </script>
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-TKMFJVWT');</script>
     <!-- End Google Tag Manager -->
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="EEjg_-VyAwGUbF4Qw8jxUiFjoGgyUVfOZnOMD5UWIkw" />
     <title>HiResume | Free Resume Builder</title>
 
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-      if (window.pdfjsLib) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      }
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-
+    
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -48,7 +35,6 @@
       padding: 0;
     }
 
-    /* Screen Preview */
     .a4-page {
       width: 210mm;
       min-height: 297mm;
@@ -58,12 +44,12 @@
     }
 
     /* =========================
-       PRINT / PDF FIXES
+       PRINT / PDF RULES
     ========================= */
     @media print {
       @page {
         size: A4;
-        margin: 0mm; /* Zero margin - we control it in CSS */
+        margin: 0; /* Important: We handle margins inside the component */
       }
 
       html, body {
@@ -72,39 +58,34 @@
         background: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: hidden; /* Stop spillover to page 2 */
+        overflow: hidden !important; /* STRICTLY prevent page 2 */
       }
 
-      /* Hide UI elements */
       body * {
         visibility: hidden;
       }
 
-      /* Show Resume */
       #resume-preview,
       #resume-preview * {
         visibility: visible;
       }
 
       #resume-preview {
-        /* CHANGED: absolute instead of fixed prevents duplication */
-        position: absolute;
+        position: fixed; /* Fixed ensures it sticks to P1 */
         left: 0;
         top: 0;
         width: 100% !important;
-        /* Ensure it forces the white background to the bottom */
-        min-height: 100% !important; 
+        height: 100% !important;
         margin: 0 !important;
         box-shadow: none !important;
         print-color-adjust: exact !important;
         -webkit-print-color-adjust: exact !important;
+        
+        /* Ensure transformation (zoom) originates from top-left */
+        transform-origin: top left;
       }
 
-      div, section, article {
-        page-break-inside: avoid;
-      }
-      
-      .no-print, button, nav {
+      .no-print {
         display: none !important;
       }
     }
