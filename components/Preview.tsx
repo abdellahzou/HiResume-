@@ -890,13 +890,12 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   }, [resume]);
 
 
-  // --- AUTO-SIZING LOGIC ---
+// --- AUTO-SIZING LOGIC ---
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Use a safe A4 Height
-    const TARGET_HEIGHT = 1080; 
-    const isMobile = window.innerWidth < 800; 
+    // Use a safe A4 Height (1123px is standard, we use 1090 for safety buffer)
+    const TARGET_HEIGHT = 1090; 
 
     setZoomScale(1);
     setSpacingScale(1);
@@ -904,9 +903,17 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     setTimeout(() => {
       if (!containerRef.current) return;
       const contentHeight = containerRef.current.scrollHeight;
+      
+      // FIX: Check container width instead of window width.
+      // If the container is narrow (like in the sidebar or mobile), text wraps more.
+      const containerWidth = containerRef.current.offsetWidth;
+      const isNarrowView = containerWidth < 800; 
 
-      // Mobile print prediction: 
-      const perceivedPrintHeight = isMobile ? contentHeight * 0.85 : contentHeight;
+      // Prediction Logic:
+      // If the view is narrow (sidebar/mobile), the DOM is artificially taller due to text wrapping.
+      // When printed on A4 (which is wide), text unwraps and height shrinks.
+      // We predict the print height will be about 80% of the narrow view height.
+      const perceivedPrintHeight = isNarrowView ? contentHeight * 0.8 : contentHeight;
 
       if (perceivedPrintHeight > TARGET_HEIGHT) {
         // Content too big: Shrink
@@ -916,12 +923,14 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       } else {
         // Content too small: Expand Spacing
         const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
+        // Divisor 600 slows down the expansion significantly
         const expansionFactor = 1 + (emptySpace / 600); 
+        // Cap the max spacing to 2.4x to prevent explosion
         setSpacingScale(Math.min(2.4, expansionFactor));
         setZoomScale(1); 
       }
     }, 100);
-  }, [sortedResume, t]); 
+  }, [sortedResume, t]);
 
   const layoutStyles = {
     '--section-spacing': `${2 * spacingScale}rem`,
