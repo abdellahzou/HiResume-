@@ -300,6 +300,31 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 )
               })}
             </div>
+
+            {/* Navigation Buttons */}
+            <div className="p-4 border-t space-y-2">
+              <button
+                disabled={currentStep === 0}
+                onClick={() => setStep(Math.max(0, currentStep - 1))}
+                className="w-full py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+              <button
+                onClick={handlePrimaryAction}
+                className="w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                {currentStep === 7 ? (
+                  <>
+                    <Printer size={16} /> Download PDF
+                  </>
+                ) : (
+                  <>
+                    Next <ChevronRight size={16} />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* MIDDLE - EDITOR */}
