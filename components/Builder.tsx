@@ -230,7 +230,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
           {/* LEFT SIDEBAR - NAVIGATION */}
           <div className="w-64 bg-white border-r flex flex-col">
             {/* Steps Navigation */}
-            <div className="flex-1 py-6 overflow-y-auto">
+            <div className="py-6">
               {steps.map((step, index) => {
                 const active = currentStep === step.id
                 const done = currentStep > step.id
@@ -301,8 +301,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               })}
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="p-4 border-t space-y-2">
+            {/* Navigation Buttons - Directly Under Steps */}
+            <div className="px-4 pb-6 space-y-2">
               <button
                 disabled={currentStep === 0}
                 onClick={() => setStep(Math.max(0, currentStep - 1))}
