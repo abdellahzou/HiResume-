@@ -2,44 +2,23 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useResumeStore } from '../store';
 import { Translation, ResumeData } from '../types';
 import clsx from 'clsx';
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-  Briefcase,
-  GraduationCap,
-  Award,
-  FolderGit2,
-  Star
-} from 'lucide-react';
-
-/* =========================================================
-   CONSTANTS – REAL A4 SIZE IN PX (96 DPI)
-========================================================= */
-const A4_HEIGHT_PX = 1122; // 297mm @ 96dpi
-const A4_WIDTH_PX = 794;  // 210mm @ 96dpi
+import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award, FolderGit2, Star } from 'lucide-react';
 
 interface PreviewProps {
   t: Translation;
   className?: string;
 }
 
-/* =========================================================
-   SMALL REUSABLE COMPONENTS
-========================================================= */
-const ContactItem = ({ icon: Icon, text }: { icon: any; text: string }) => (
+// Reusable Components
+const ContactItem = ({ icon: Icon, text }: { icon: any, text: string }) => (
   <div className="flex items-center gap-1.5">
     <Icon size={14} className="opacity-70" />
     <span>{text}</span>
   </div>
 );
 
-const SectionHeader = ({ title, className }: { title: string; className?: string }) => (
-  <h2 className={clsx(
-    "text-lg font-bold uppercase tracking-wider mb-[var(--item-spacing)] print:mb-2",
-    className
-  )}>
+const SectionHeader = ({ title, className }: { title: string, className?: string }) => (
+  <h2 className={clsx("text-lg font-bold uppercase tracking-wider mb-[var(--item-spacing)] print:mb-2", className)}>
     {title}
   </h2>
 );
@@ -48,11 +27,6 @@ const dynamicStyles = {
   section: { marginBottom: 'var(--section-spacing)' },
   item: { marginBottom: 'var(--item-spacing)' },
 };
-
-/* =========================================================
-   👉 TEMPLATES
-   (UNCHANGED — your existing templates are kept as-is)
-========================================================= */
 
 // --- TEMPLATE 1: MODERN ---
 const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
@@ -853,20 +827,14 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
   </div>
 );
 
-/* =========================================================
-   PREVIEW COMPONENT (FIXED)
-========================================================= */
 export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   const { resume } = useResumeStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // State for layout adjustments
+  const [zoomScale, setZoomScale] = useState(1);
+  const [spacingScale, setSpacingScale] = useState(1);
 
-  const outerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-
-  const [scale, setScale] = useState(1);
-
-  /* -------------------------------------------------------
-     TEMPLATE SELECTION
-  ------------------------------------------------------- */
   const TemplateComponent = {
     modern: ModernTemplate,
     classic: ClassicTemplate,
@@ -876,90 +844,99 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     executive: ExecutiveTemplate,
   }[resume.templateId];
 
-  /* -------------------------------------------------------
-     SORTING (UNCHANGED, SAFE)
-  ------------------------------------------------------- */
+  // --- AUTOMATIC SORTING LOGIC ---
   const sortedResume = useMemo(() => {
+    // Helper function to sort general items (Experience, Education, Custom)
     const sortGeneral = (items: any[]) => {
       if (!items) return [];
       return [...items].sort((a, b) => {
+        // 1. Current Always First
         if (a.current && !b.current) return -1;
         if (!a.current && b.current) return 1;
 
-        const endA = new Date(a.endDate || 0).getTime();
-        const endB = new Date(b.endDate || 0).getTime();
-        if (endB !== endA) return endB - endA;
+        // 2. Sort by End Date (Descending)
+        const dateA = new Date(a.endDate || 0).getTime();
+        const dateB = new Date(b.endDate || 0).getTime();
+        
+        if (dateB !== dateA) return dateB - dateA;
 
+        // 3. Tie-breaker: Start Date (Descending)
         const startA = new Date(a.startDate || 0).getTime();
         const startB = new Date(b.startDate || 0).getTime();
         return startB - startA;
       });
     };
 
-    const sortCerts = (items: any[]) =>
-      [...items].sort((a, b) =>
-        new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
-      );
+    const sortCertifications = (items: any[]) => {
+      if (!items) return [];
+      return [...items].sort((a, b) => {
+         const dateA = new Date(a.date || 0).getTime();
+         const dateB = new Date(b.date || 0).getTime();
+         return dateB - dateA;
+      });
+    };
 
-    const safe = resume as any;
+    // Cast resume as any to allow accessing customItems if they are not yet in the generic Type definition
+    const safeResume = resume as any;
 
     return {
       ...resume,
       experience: sortGeneral(resume.experience),
       education: sortGeneral(resume.education),
-      certifications: sortCerts(resume.certifications),
-      customItems: sortGeneral(safe.customItems || []),
+      // Sort customItems if they exist, otherwise return empty array
+      customItems: sortGeneral(safeResume.customItems || []),
+      certifications: sortCertifications(resume.certifications)
     };
   }, [resume]);
 
-  /* -------------------------------------------------------
-     🔥 AUTO SCALE TO FIT A4 (THE FIX)
-  ------------------------------------------------------- */
+
+  // --- AUTO-SIZING LOGIC ---
   useEffect(() => {
-    const el = innerRef.current;
-    if (!el) return;
+    if (!containerRef.current) return;
 
-    // Reset first to measure real height
-    el.style.transform = 'scale(1)';
+    // Use a safe A4 Height
+    const TARGET_HEIGHT = 1080; 
+    const isMobile = window.innerWidth < 800; 
 
-    const contentHeight = el.scrollHeight;
+    setZoomScale(1);
+    setSpacingScale(1);
 
-    if (contentHeight > A4_HEIGHT_PX) {
-      const nextScale = A4_HEIGHT_PX / contentHeight;
-      setScale(Number(nextScale.toFixed(3)));
-    } else {
-      setScale(1);
-    }
-  }, [sortedResume, resume.templateId]);
+    setTimeout(() => {
+      if (!containerRef.current) return;
+      const contentHeight = containerRef.current.scrollHeight;
 
-  /* -------------------------------------------------------
-     RENDER
-  ------------------------------------------------------- */
-  if (!TemplateComponent) return null;
+      // Mobile print prediction: 
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.85 : contentHeight;
+
+      if (perceivedPrintHeight > TARGET_HEIGHT) {
+        // Content too big: Shrink
+        const newScale = TARGET_HEIGHT / perceivedPrintHeight;
+        setZoomScale(Math.max(0.65, newScale));
+        setSpacingScale(1); 
+      } else {
+        // Content too small: Expand Spacing
+        const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
+        const expansionFactor = 1 + (emptySpace / 600); 
+        setSpacingScale(Math.min(2.4, expansionFactor));
+        setZoomScale(1); 
+      }
+    }, 100);
+  }, [sortedResume, t]); 
+
+  const layoutStyles = {
+    '--section-spacing': `${2 * spacingScale}rem`,
+    '--item-spacing': `${0.75 * spacingScale}rem`,
+    zoom: zoomScale,
+  } as React.CSSProperties;
 
   return (
-    <div
-      ref={outerRef}
-      id="resume-preview"
-      className={clsx(
-        "a4-page bg-white origin-top-left",
-        className
-      )}
-      style={{
-        width: `${A4_WIDTH_PX}px`,
-        height: `${A4_HEIGHT_PX}px`,
-      }}
+    <div 
+      id="resume-preview" 
+      ref={containerRef}
+      style={layoutStyles}
+      className={clsx("a4-page bg-white shadow-lg mx-auto overflow-hidden origin-top", className)}
     >
-      <div
-        ref={innerRef}
-        style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: `${A4_WIDTH_PX}px`,
-        }}
-      >
-        <TemplateComponent resume={sortedResume} t={t} />
-      </div>
+      <TemplateComponent resume={sortedResume} t={t} />
     </div>
   );
 };
