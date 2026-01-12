@@ -895,7 +895,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     if (!containerRef.current) return;
 
     // Use a safe A4 Height
-    const TARGET_HEIGHT = 1123; 
+    const TARGET_HEIGHT = 1080; 
     const isMobile = window.innerWidth < 800; 
 
     setZoomScale(1);
