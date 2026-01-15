@@ -79,7 +79,6 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
-      {/* --- CUSTOM SECTION --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -833,7 +832,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   
   // State for layout adjustments
-  // We use CSS variables for scaling to ensure clean print overrides
   const [displayScale, setDisplayScale] = useState(1);
   const [spacingScale, setSpacingScale] = useState(1);
   const [contentScale, setContentScale] = useState(1);
@@ -892,7 +890,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
         // Updated logic: Scale to fill width minus minimal padding (10px)
-        // This fixes the "huge margins" issue
         const availableWidth = Math.max(width - 10, 0); 
         const newScale = Math.min(availableWidth / A4_WIDTH_PX, 1);
         setDisplayScale(Math.max(0.1, newScale));
@@ -930,7 +927,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
             setSpacingScale(0.4);
             
             // Wait for spacing re-render, then measure again to apply content zoom
-            // We approximate for now to avoid double render loop flickering
             const approximatedHeight = contentHeight * 0.90; 
             if (approximatedHeight > MAX_HEIGHT) {
                 const zoom = MAX_HEIGHT / approximatedHeight;
@@ -947,7 +943,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       }
     };
 
-    // Debounce slightly to allow DOM to settle
     const timer = setTimeout(fitContent, 50);
     return () => clearTimeout(timer);
   }, [sortedResume, t, resume.templateId]); 
@@ -962,16 +957,14 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
 
   return (
     <div 
+      id="preview-wrapper"
       ref={containerRef}
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
       style={layoutStyles}
     >
-      {/* 
-        DISPLAY WRAPPER: Scales A4 to fit screen.
-        We use a CSS variable for transform scale so we can override it in @media print
-      */}
       <div 
-        className="relative print:transform-none print:w-auto print:h-auto print:block"
+        id="resume-preview-wrapper"
+        className="relative"
         style={{
           transform: `scale(var(--scale-factor))`,
           transformOrigin: 'top center',
@@ -980,17 +973,11 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
           flexShrink: 0,
         }}
       >
-        {/* The Actual A4 Page */}
         <div
           id="resume-preview"
           ref={contentRef}
-          className="bg-white shadow-2xl w-full h-full overflow-hidden print:shadow-none mx-auto print:visible"
+          className="bg-white shadow-2xl w-full h-full overflow-hidden mx-auto"
         >
-            {/* 
-               CONTENT ZOOM WRAPPER:
-               This scales the internal content if it's too long, like a "Fit to Page" printer setting.
-               This logic persists in print to ensure no overflow.
-            */}
             <div style={{ 
                 transform: `scale(var(--content-scale))`, 
                 transformOrigin: 'top center',
