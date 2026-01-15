@@ -66,7 +66,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     downloadFile(latex, "resume.tex", "text/x-tex")
   }
 
-  // Helper to handle the primary action button logic
   const handlePrimaryAction = () => {
     if (currentStep === 7) {
       handlePdfExport()
