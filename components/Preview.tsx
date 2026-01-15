@@ -79,6 +79,7 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
+      {/* --- CUSTOM SECTION --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -957,13 +958,12 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
 
   return (
     <div 
-      id="preview-wrapper"
       ref={containerRef}
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
       style={layoutStyles}
     >
+      {/* DISPLAY WRAPPER: Scales A4 to fit screen */}
       <div 
-        id="resume-preview-wrapper"
         className="relative"
         style={{
           transform: `scale(var(--scale-factor))`,
@@ -973,11 +973,17 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
           flexShrink: 0,
         }}
       >
+        {/* 
+           THE ACTUAL RESUME CONTENT
+           We attach the ID here so the utility function clones JUST this card.
+           Note: The style attribute here contains spacingScale which IS desired in the print.
+        */}
         <div
-          id="resume-preview"
+          id="resume-preview-content"
           ref={contentRef}
           className="bg-white shadow-2xl w-full h-full overflow-hidden mx-auto"
         >
+            {/* CONTENT ZOOM WRAPPER: Internal scaling for overflow protection */}
             <div style={{ 
                 transform: `scale(var(--content-scale))`, 
                 transformOrigin: 'top center',
@@ -990,7 +996,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       
       {/* Phantom Spacer for scrolling */}
       <div 
-         className="print:hidden"
          style={{ 
              height: `${A4_HEIGHT_PX * displayScale + 20}px`, 
              width: '1px', 
