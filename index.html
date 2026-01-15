@@ -41,81 +41,21 @@
       padding: 0;
     }
 
-    /* =========================
-       STRICT PRINT RULES
-    ========================= */
+    /* Basic print reset if user attempts Ctrl+P manually */
     @media print {
-      @page {
-        size: A4;
-        margin: 0 !important;
+      body * {
+        visibility: hidden;
       }
-
-      html, body {
-        width: 210mm !important;
-        height: 297mm !important;
-        background: #ffffff !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: visible !important; /* Allow content to flow */
-        print-color-adjust: exact !important;
-        -webkit-print-color-adjust: exact !important;
+      #resume-preview-content, #resume-preview-content * {
+        visibility: visible;
       }
-
-      /* 1. HIDE EVERYTHING ELSE */
-      body > * {
+      #resume-preview-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+      .no-print {
         display: none !important;
-      }
-
-      /* 2. EXCEPT THE ROOT (so we can reach the resume) */
-      body > #root {
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: auto !important;
-        overflow: visible !important;
-      }
-
-      /* 3. Hide everything inside #root */
-      #root * {
-        display: none !important;
-      }
-
-      /* 4. EXPOSE THE RESUME WRAPPER HIERARCHY */
-      /* We need to make the chain of parents visible */
-      #preview-wrapper, 
-      #preview-wrapper * {
-        display: block !important; /* FORCE BLOCK to kill Flex centering */
-        visibility: visible !important;
-      }
-
-      /* 5. POSITION THE WRAPPER */
-      #preview-wrapper {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-        z-index: 99999 !important;
-        overflow: hidden !important;
-      }
-
-      /* 6. RESET TRANSFORMS & SCALE */
-      #resume-preview-wrapper, #resume-preview {
-        transform: none !important;
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-      }
-
-      /* Overwrite the CSS variable scaling */
-      * {
-        --scale-factor: 1 !important;
       }
     }
     </style>
