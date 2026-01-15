@@ -61,6 +61,14 @@
         -webkit-print-color-adjust: exact !important;
       }
 
+      /* 
+         OVERRIDE CSS VARIABLES FOR PRINT 
+         Force scale factor to 1 to remove mobile "mini-pdf" effect
+      */
+      * {
+        --scale-factor: 1 !important;
+      }
+
       /* Reset any screen scaling on wrapper divs */
       .print\:transform-none {
           transform: none !important;
@@ -69,16 +77,24 @@
           margin: 0 !important;
       }
 
-      /* Hide everything except the resume preview */
-      body > *:not(#resume-preview) {
-        display: none !important;
+      /* 
+         VISIBILITY STRATEGY 
+         We hide everything, then show only the resume.
+         We do NOT use display:none on body children because it kills React roots.
+      */
+      body * {
+        visibility: hidden;
+      }
+
+      #resume-preview,
+      #resume-preview * {
+        visibility: visible;
       }
       
       /* Ensure the resume breaks out of any hidden containers */
       #resume-preview {
         display: block !important;
-        visibility: visible !important;
-        position: fixed !important;
+        position: absolute !important; /* Absolute avoids transform stacking context issues compared to fixed */
         left: 0 !important;
         top: 0 !important;
         width: 210mm !important;
