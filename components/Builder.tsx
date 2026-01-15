@@ -4,9 +4,26 @@ import { useResumeStore } from "../store"
 import type { Translation, TemplateId } from "../types"
 import { Editor } from "./Editor"
 import { Preview } from "./Preview"
-import { Printer, Download, User, ChevronRight, CheckCircle2 } from "lucide-react"
+import { AdSpace } from "./AdSpace"
+import { SHOW_ADS } from "../constants"
+import { generateLatex, generateDocx, downloadFile } from "../utils"
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  Printer,
+  FileText,
+  Code,
+  Download,
+  Menu,
+  User,
+} from "lucide-react"
 
-export const Builder: React.FC<{ t: Translation }> = ({ t }) => {
+interface BuilderProps {
+  t: Translation
+}
+
+export const Builder: React.FC<BuilderProps> = ({ t }) => {
   const { currentStep, setStep, resume, setTemplateId } = useResumeStore()
   const stepperRef = useRef<HTMLDivElement>(null)
 
@@ -23,87 +40,401 @@ export const Builder: React.FC<{ t: Translation }> = ({ t }) => {
 
   const templates: { id: TemplateId; name: string }[] = [
     { id: "modern", name: "Modern" },
-    { id: "professional", name: "Professional" }
+    { id: "classic", name: "Classic" },
+    { id: "minimal", name: "Minimal" },
+    { id: "executive", name: "Executive" },
   ]
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* HEADER */}
-      <header className="h-16 bg-white border-b flex items-center justify-between px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold">H</div>
-          <span className="font-bold text-xl">HiResume</span>
-        </div>
-        <button onClick={() => window.print()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold">
-          <Printer size={18} /> Export PDF
-        </button>
-      </header>
+  useEffect(() => {
+    const el = stepperRef.current?.querySelector('[data-active="true"]')
+    el?.scrollIntoView({ behavior: "smooth", inline: "center" })
+  }, [currentStep])
 
-      {/* MOBILE STEPPER (RESTORED) */}
-      <div className="lg:hidden bg-white border-b overflow-x-auto no-scrollbar py-3 px-4 flex gap-6">
-        {steps.map((s, i) => (
-          <div key={s.id} onClick={() => setStep(s.id)} className="flex flex-col items-center min-w-[60px]">
-             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${currentStep === s.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                {currentStep > s.id ? <CheckCircle2 size={14} /> : i + 1}
-             </div>
-             <span className="text-[10px] mt-1 text-gray-500 font-medium whitespace-nowrap">{s.label}</span>
+  const handlePdfExport = () => window.print()
+
+  const handleDocxExport = async () => {
+    const blob = await generateDocx(resume, t)
+    downloadFile(
+      blob,
+      "resume.docx",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+  }
+
+  const handleLatexExport = () => {
+    const latex = generateLatex(resume, t)
+    downloadFile(latex, "resume.tex", "text/x-tex")
+  }
+
+  const progressPercentage = ((currentStep + 1) / steps.length) * 100
+
+  // Helper to handle the primary action button logic
+  const handlePrimaryAction = () => {
+    if (currentStep === 7) {
+      handlePdfExport()
+    } else {
+      setStep(Math.min(7, currentStep + 1))
+    }
+  }
+
+  return (
+    <>
+      {/* ================= MOBILE VIEW (< 1024px) ================= */}
+      <div className="lg:hidden min-h-screen bg-gray-50 flex flex-col">
+        {/* MOBILE STEPPER */}
+        <div className="bg-white border-b px-4 pt-4 pb-3">
+          <div
+            ref={stepperRef}
+            className="flex items-center gap-6 overflow-x-auto no-scrollbar"
+          >
+            {steps.map((step, index) => {
+              const active = currentStep === step.id
+              const done = currentStep > step.id
+
+              return (
+                <div key={step.id} className="flex flex-col items-center min-w-[64px]">
+                  <div
+                    data-active={active}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                      active
+                        ? "bg-blue-600 text-white"
+                        : done
+                        ? "bg-slate-800 text-white"
+                        : "bg-gray-300 text-white"
+                    }`}
+                  >
+                    {done ? <CheckCircle2 size={14} /> : index + 1}
+                  </div>
+                  <span
+                    className={`mt-2 text-[11px] font-semibold text-center ${
+                      active ? "text-blue-600" : "text-gray-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              )
+            })}
           </div>
-        ))}
+        </div>
+
+        {/* MOBILE CONTENT */}
+        <main className="flex-1 px-4 py-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {steps[currentStep]?.label}
+            </h1>
+          </div>
+
+          {currentStep < 7 ? (
+            <div className="space-y-6">
+              <Editor t={t} />
+              {SHOW_ADS && (
+                <AdSpace className="h-20" label="Ad Space (Mobile)" />
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                {templates.map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    onClick={() => setTemplateId(tmpl.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                      resume.templateId === tmpl.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {tmpl.name}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <button
+                  onClick={handlePdfExport}
+                  className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+                >
+                  <Printer size={16} /> Download PDF
+                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleDocxExport}
+                    className="py-2 rounded-lg border font-semibold flex items-center justify-center gap-2"
+                  >
+                    <FileText size={14} /> Word
+                  </button>
+                  <button
+                    onClick={handleLatexExport}
+                    className="py-2 rounded-lg border font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Code size={14} /> LaTeX
+                  </button>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[75vh] overflow-hidden">
+                <div className="h-full overflow-y-auto">
+                  <Preview t={t} />
+                </div>
+              </div>
+            </>
+          )}
+        </main>
+
+        {/* MOBILE BOTTOM NAV */}
+        <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex gap-3">
+          <button
+            disabled={currentStep === 0}
+            onClick={() => setStep(Math.max(0, currentStep - 1))}
+            className="flex-1 py-3 rounded-lg bg-gray-800 text-white font-semibold disabled:opacity-40"
+          >
+            Back
+          </button>
+          <button
+            onClick={handlePrimaryAction}
+            className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
+          >
+            {currentStep === 7 ? (
+              <>
+                <Printer size={18} /> Download PDF
+              </>
+            ) : (
+              "Next Step"
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* DESKTOP NAV */}
-        <aside className="hidden lg:flex w-64 bg-white border-r flex-col p-4">
-          {steps.map(s => (
-            <button key={s.id} onClick={() => setStep(s.id)} className={`w-full text-left px-4 py-3 rounded-lg mb-1 font-medium text-sm transition-colors ${currentStep === s.id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 text-gray-600'}`}>
-              {s.label}
-            </button>
-          ))}
-          <div className="mt-auto space-y-2">
-            <button disabled={currentStep === 0} onClick={() => setStep(currentStep - 1)} className="w-full py-2 border rounded-lg text-sm">Previous</button>
-            <button onClick={() => setStep(Math.min(7, currentStep+1))} className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm">Next Step</button>
+      {/* ================= DESKTOP VIEW (>= 1024px) ================= */}
+      <div className="hidden lg:flex min-h-screen bg-gray-50">
+        {/* TOP HEADER */}
+        <div className="fixed top-0 left-0 right-0 h-16 bg-white border-b z-50 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-lg">H</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">HiResume</span>
           </div>
-        </aside>
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-gray-100 rounded-lg">
+              <Menu size={20} className="text-gray-600" />
+            </button>
+            <button className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center">
+              <User size={18} className="text-gray-600" />
+            </button>
+          </div>
+        </div>
 
-        {/* EDITOR AREA */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-12">
-          <div className="max-w-2xl mx-auto">
-             {currentStep < 7 ? (
-               <div className="bg-white p-6 lg:p-10 rounded-2xl border shadow-sm">
-                 <h2 className="text-2xl font-bold mb-8">{steps[currentStep].label}</h2>
-                 <Editor t={t} />
-               </div>
-             ) : (
-               <div className="space-y-6">
-                  <div className="bg-white p-6 rounded-2xl border">
-                    <h3 className="font-bold mb-4">Choose Template</h3>
-                    <div className="flex gap-2">
-                      {templates.map(tmp => (
-                        <button key={tmp.id} onClick={() => setTemplateId(tmp.id)} className={`px-4 py-2 rounded-lg text-sm ${resume.templateId === tmp.id ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
-                          {tmp.name}
+        {/* MAIN CONTENT WRAPPER */}
+        <div className="flex w-full mt-16">
+          {/* LEFT SIDEBAR - NAVIGATION */}
+          <div className="w-64 bg-white border-r flex flex-col">
+            {/* Steps Navigation */}
+            <div className="py-6">
+              {steps.map((step, index) => {
+                const active = currentStep === step.id
+                const done = currentStep > step.id
+
+                return (
+                  <button
+                    key={step.id}
+                    onClick={() => setStep(step.id)}
+                    className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${
+                      active
+                        ? "bg-blue-50 border-r-2 border-blue-600 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className={`flex items-center justify-center flex-shrink-0 ${active ? "text-blue-600" : "text-gray-400"}`}>
+                      {step.id === 0 && <User size={18} />}
+                      {step.id === 1 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                        </svg>
+                      )}
+                      {step.id === 2 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="7" height="7" />
+                          <rect x="14" y="3" width="7" height="7" />
+                          <rect x="14" y="14" width="7" height="7" />
+                          <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                      )}
+                      {step.id === 3 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        </svg>
+                      )}
+                      {step.id === 4 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      )}
+                      {step.id === 5 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="2" y1="12" x2="22" y2="12" />
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                      )}
+                      {step.id === 6 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="16" />
+                          <line x1="8" y1="12" x2="16" y2="12" />
+                        </svg>
+                      )}
+                      {step.id === 7 && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+                      {step.label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Navigation Buttons - Directly Under Steps */}
+            <div className="px-4 pb-6 space-y-2">
+              <button
+                disabled={currentStep === 0}
+                onClick={() => setStep(Math.max(0, currentStep - 1))}
+                className="w-full py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+              <button
+                onClick={handlePrimaryAction}
+                className="w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                {currentStep === 7 ? (
+                  <>
+                    <Printer size={16} /> Download PDF
+                  </>
+                ) : (
+                  <>
+                    Next <ChevronRight size={16} />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* MIDDLE - EDITOR */}
+          <div className="flex-1 overflow-y-auto bg-gray-50">
+            <div className="max-w-3xl mx-auto p-8">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                  {steps[currentStep]?.label}
+                </h1>
+              </div>
+
+              {currentStep < 7 ? (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    <Editor t={t} />
+                  </div>
+                  {SHOW_ADS && (
+                    <AdSpace className="h-24" label="Ad Space" />
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Template Selector */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                      Template
+                    </h3>
+                    <div className="flex gap-3">
+                      {templates.map((tmpl) => (
+                        <button
+                          key={tmpl.id}
+                          onClick={() => setTemplateId(tmpl.id)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            resume.templateId === tmpl.id
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {tmpl.name}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <div className="lg:hidden"><Preview t={t} /></div>
-               </div>
-             )}
+
+                  {/* Download */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                      Download Resume
+                    </h3>
+                    <div className="space-y-3">
+                      <button
+                        onClick={handlePdfExport}
+                        className="w-full py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Printer size={18} /> Download PDF
+                      </button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={handleDocxExport}
+                          className="py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <FileText size={16} /> Word
+                        </button>
+                        <button
+                          onClick={handleLatexExport}
+                          className="py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Code size={16} /> LaTeX
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </main>
 
-        {/* DESKTOP PREVIEW */}
-        <aside className="hidden lg:flex w-[480px] bg-slate-900 border-l p-4 overflow-y-auto">
-          <Preview t={t} />
-        </aside>
+          {/* RIGHT - LIVE PREVIEW */}
+          <div className="w-[480px] bg-slate-700 overflow-y-auto">
+            <div className="sticky top-0 bg-slate-700 px-6 py-4 z-10 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">Preview</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePdfExport}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <Download size={16} /> Download PDF
+                </button>
+                <select
+                  value={resume.templateId}
+                  onChange={(e) => setTemplateId(e.target.value as TemplateId)}
+                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700"
+                >
+                  <option value="modern">Template: Modern</option>
+                  <option value="classic">Template: Classic</option>
+                  <option value="minimal">Template: Minimal</option>
+                  <option value="executive">Template: Executive</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div className="aspect-[8.5/11] overflow-y-auto">
+                  <Preview t={t} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* MOBILE BOTTOM NAV */}
-      <div className="lg:hidden h-16 bg-white border-t p-3 flex gap-3">
-        <button disabled={currentStep === 0} onClick={() => setStep(currentStep - 1)} className="flex-1 border rounded-xl font-bold">Back</button>
-        <button onClick={() => setStep(Math.min(7, currentStep + 1))} className="flex-2 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2">
-          {currentStep === 7 ? "Export PDF" : "Next Step"} <ChevronRight size={18} />
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
