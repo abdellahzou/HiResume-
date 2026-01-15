@@ -66,8 +66,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     downloadFile(latex, "resume.tex", "text/x-tex")
   }
 
-  const progressPercentage = ((currentStep + 1) / steps.length) * 100
-
   // Helper to handle the primary action button logic
   const handlePrimaryAction = () => {
     if (currentStep === 7) {
@@ -119,7 +117,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         </div>
 
         {/* MOBILE CONTENT */}
-        <main className="flex-1 px-4 py-6 space-y-6">
+        <main className="flex-1 px-4 py-6 space-y-6 overflow-hidden">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">
               {steps[currentStep]?.label}
@@ -172,17 +170,17 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                   </button>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[75vh] overflow-hidden">
-                <div className="h-full overflow-y-auto">
-                  <Preview t={t} />
-                </div>
+              
+              {/* MOBILE PREVIEW CONTAINER */}
+              <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[65vh] overflow-hidden relative">
+                 <Preview t={t} />
               </div>
             </>
           )}
         </main>
 
         {/* MOBILE BOTTOM NAV */}
-        <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex gap-3">
+        <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex gap-3 z-20">
           <button
             disabled={currentStep === 0}
             onClick={() => setStep(Math.max(0, currentStep - 1))}
@@ -226,15 +224,14 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
         </div>
 
         {/* MAIN CONTENT WRAPPER */}
-        <div className="flex w-full mt-16">
+        <div className="flex w-full mt-16 h-[calc(100vh-64px)] overflow-hidden">
           {/* LEFT SIDEBAR - NAVIGATION */}
-          <div className="w-64 bg-white border-r flex flex-col">
+          <div className="w-64 bg-white border-r flex flex-col h-full overflow-y-auto">
             {/* Steps Navigation */}
             <div className="py-6">
               {steps.map((step, index) => {
                 const active = currentStep === step.id
-                const done = currentStep > step.id
-
+                
                 return (
                   <button
                     key={step.id}
@@ -246,52 +243,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                     }`}
                   >
                     <div className={`flex items-center justify-center flex-shrink-0 ${active ? "text-blue-600" : "text-gray-400"}`}>
-                      {step.id === 0 && <User size={18} />}
-                      {step.id === 1 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                        </svg>
-                      )}
-                      {step.id === 2 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="7" height="7" />
-                          <rect x="14" y="3" width="7" height="7" />
-                          <rect x="14" y="14" width="7" height="7" />
-                          <rect x="3" y="14" width="7" height="7" />
-                        </svg>
-                      )}
-                      {step.id === 3 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        </svg>
-                      )}
-                      {step.id === 4 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                      )}
-                      {step.id === 5 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="2" y1="12" x2="22" y2="12" />
-                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                        </svg>
-                      )}
-                      {step.id === 6 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="12" y1="8" x2="12" y2="16" />
-                          <line x1="8" y1="12" x2="16" y2="12" />
-                        </svg>
-                      )}
-                      {step.id === 7 && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      )}
+                       <span className="text-sm font-bold">{index + 1}</span>
                     </div>
                     <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
                       {step.label}
@@ -301,8 +253,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
               })}
             </div>
 
-            {/* Navigation Buttons - Directly Under Steps */}
-            <div className="px-4 pb-6 space-y-2">
+            {/* Navigation Buttons */}
+            <div className="mt-auto px-4 pb-6 space-y-2">
               <button
                 disabled={currentStep === 0}
                 onClick={() => setStep(Math.max(0, currentStep - 1))}
@@ -328,8 +280,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
           </div>
 
           {/* MIDDLE - EDITOR */}
-          <div className="flex-1 overflow-y-auto bg-gray-50">
-            <div className="max-w-3xl mx-auto p-8">
+          <div className="flex-1 overflow-y-auto bg-gray-50 h-full relative">
+            <div className="max-w-3xl mx-auto p-8 pb-32">
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-1">
                   {steps[currentStep]?.label}
@@ -369,6 +321,11 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                     </div>
                   </div>
 
+                  {/* DESKTOP PREVIEW STEP CONTAINER */}
+                  <div className="bg-gray-200/50 rounded-xl border border-gray-300 overflow-hidden h-[800px] relative">
+                     <Preview t={t} />
+                  </div>
+
                   {/* Download */}
                   <div className="bg-white rounded-lg border border-gray-200 p-6">
                     <h3 className="text-sm font-semibold text-gray-900 mb-4">
@@ -402,35 +359,29 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             </div>
           </div>
 
-          {/* RIGHT - LIVE PREVIEW */}
-          <div className="w-[480px] bg-slate-700 overflow-y-auto">
-            <div className="sticky top-0 bg-slate-700 px-6 py-4 z-10 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">Preview</h2>
+          {/* RIGHT - LIVE PREVIEW SIDEBAR */}
+          <div className="w-[450px] bg-slate-800 border-l border-slate-700 h-full flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between shrink-0">
+              <h2 className="text-sm font-semibold text-white">Live Preview</h2>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handlePdfExport}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  <Download size={16} /> Download PDF
+                  <Download size={14} /> PDF
                 </button>
-                <select
-                  value={resume.templateId}
-                  onChange={(e) => setTemplateId(e.target.value as TemplateId)}
-                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700"
-                >
-                  <option value="modern">Template: Modern</option>
-                  <option value="classic">Template: Classic</option>
-                  <option value="minimal">Template: Minimal</option>
-                  <option value="executive">Template: Executive</option>
-                </select>
               </div>
             </div>
-            <div className="p-6">
-              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-                <div className="aspect-[8.5/11] overflow-y-auto">
+            
+            {/* 
+               Preview Container for Sidebar 
+               The Preview component inside here will automatically scale itself 
+               to fit this 450px width using the ResizeObserver logic.
+            */}
+            <div className="flex-1 overflow-hidden bg-slate-900 relative">
+               <div className="absolute inset-0 p-6">
                   <Preview t={t} />
-                </div>
-              </div>
+               </div>
             </div>
           </div>
         </div>
