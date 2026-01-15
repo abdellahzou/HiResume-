@@ -6,7 +6,7 @@ import { Editor } from "./Editor"
 import { Preview } from "./Preview"
 import { AdSpace } from "./AdSpace"
 import { SHOW_ADS } from "../constants"
-import { generateLatex, generateDocx, downloadFile } from "../utils"
+import { generateLatex, generateDocx, downloadFile, printResume } from "../utils"
 import {
   ChevronLeft,
   ChevronRight,
@@ -50,7 +50,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
     el?.scrollIntoView({ behavior: "smooth", inline: "center" })
   }, [currentStep])
 
-  const handlePdfExport = () => window.print()
+  // UPDATED: Use printResume utility instead of window.print()
+  const handlePdfExport = () => printResume()
 
   const handleDocxExport = async () => {
     const blob = await generateDocx(resume, t)
