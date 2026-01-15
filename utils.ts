@@ -12,14 +12,100 @@ import {
   WidthType, 
   BorderStyle,
   ShadingType,
-  UnderlineType,
   convertInchesToTwip
 } from "docx";
 
-// --- HELPERS ---
-const sanitize = (str: string) => str ? str.replace(/([&%$#_{}])/g, '\\$1') : '';
+// ... [Keep all existing Latex/Docx/ATS code below unchanged] ...
+// ... [Just insert this new function at the very top or bottom] ...
 
-// --- LATEX GENERATORS ---
+/**
+ * Creates an isolated iframe, copies the resume content and styles into it,
+ * and triggers the browser print dialog. This ensures WYSIWYG output
+ * without blank pages or UI interference.
+ */
+export const printResume = () => {
+  // 1. Target the specific content we want to print
+  // We target the inner-most A4 container that holds the actual content
+  const content = document.getElementById('resume-preview-content');
+  if (!content) {
+    console.error("Resume content not found");
+    return;
+  }
+
+  // 2. Create an invisible iframe
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  // 3. specific content to the iframe document
+  const doc = iframe.contentWindow?.document;
+  if (!doc) return;
+
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><title>Resume</title>');
+  
+  // 4. Copy all styles (Tailwind, Fonts, etc.)
+  // This ensures the print looks exactly like the screen
+  const styles = document.querySelectorAll('link[rel="stylesheet"], style');
+  styles.forEach((styleNode) => {
+    doc.write(styleNode.outerHTML);
+  });
+
+  // 5. Add custom print-specific styles to the iframe
+  // Forces A4, removes margins, ensures graphics (bg colors) print
+  doc.write(`
+    <style>
+      @page { size: A4; margin: 0; }
+      body { 
+        margin: 0; 
+        padding: 0; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
+        background-color: white;
+      }
+      #resume-preview-content {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        box-shadow: none !important;
+        margin: 0 auto !important;
+        /* Ensure no transforms scale it down */
+        transform: none !important; 
+      }
+    </style>
+  `);
+  
+  doc.write('</head><body>');
+  
+  // 6. Write the actual resume HTML
+  // We clone the node to get the current state of the DOM
+  doc.write(content.outerHTML);
+  doc.write('</body></html>');
+  doc.close();
+
+  // 7. Wait for resources to load, then print
+  iframe.onload = () => {
+    // Small timeout to ensure font rendering
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      
+      // Cleanup iframe after printing (delay to allow print dialog to open)
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }, 500);
+  };
+};
+
+// --- REST OF YOUR UTILS.TS (Latex, Docx, etc.) STAYS THE SAME ---
+// ...
+// ...
+const sanitize = (str: string) => str ? str.replace(/([&%$#_{}])/g, '\\$1') : '';
 
 const latexColors = `
 \\usepackage{xcolor}
@@ -281,12 +367,6 @@ export const generateLatex = (data: ResumeData, t: Translation): string => {
   }
 };
 
-// --- DOCX GENERATORS ---
-
-/**
- * Creates a configured Document instance with specific styles
- * based on the template choice (fonts, heading sizes).
- */
 const createStyledDoc = (children: any[], templateId: string) => {
   const isSerif = ['classic', 'executive'].includes(templateId);
   const mainFont = isSerif ? "Times New Roman" : "Arial";
@@ -357,13 +437,11 @@ const createStyledDoc = (children: any[], templateId: string) => {
   });
 };
 
-// 1. Modern / Standard Layout
 const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
   const centered = templateId === 'classic' || templateId === 'executive';
   const alignment = centered ? AlignmentType.CENTER : AlignmentType.LEFT;
   
-  // Custom Styles per template
-  const nameColor = templateId === 'creative' ? "2563EB" : "000000"; // Blue for creative
+  const nameColor = templateId === 'creative' ? "2563EB" : "000000"; 
   const titleColor = "555555";
   const sectionBorder = templateId !== 'minimal'; 
 
@@ -476,10 +554,7 @@ const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
   return children;
 };
 
-// 2. Sidebar Layout (Table based) - Used for Professional
 const docxSidebar = (data: ResumeData, t: Translation) => {
-  
-  // -- Sidebar (Left Column) --
   const sidebarContent = [
     new Paragraph({ 
       text: t.headings.contact.toUpperCase(), 
@@ -516,7 +591,6 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
     );
   }
 
-  // -- Main Content (Right Column) --
   const mainContent = [
     new Paragraph({ 
       text: data.personalInfo.fullName, 
@@ -576,16 +650,15 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
     );
   }
 
-  // Structure Layout with Table
   const table = new Table({
-      columnWidths: [3200, 6400], // Approx 1/3 and 2/3
+      columnWidths: [3200, 6400], 
       rows: [
         new TableRow({
           children: [
             new TableCell({
               width: { size: 33, type: WidthType.PERCENTAGE },
               children: sidebarContent,
-              shading: { fill: "F8FAFC", type: ShadingType.CLEAR, color: "auto" }, // Light Slate
+              shading: { fill: "F8FAFC", type: ShadingType.CLEAR, color: "auto" }, 
               margins: { top: 200, bottom: 200, left: 150, right: 150 },
               verticalAlign: "top"
             }),
@@ -627,8 +700,6 @@ export const generateDocx = async (data: ResumeData, t: Translation): Promise<Bl
   return await Packer.toBlob(doc);
 };
 
-// --- EXISTING UTILS (DOWNLOAD & ATS) ---
-
 export const downloadFile = (content: string | Blob, filename: string, type: string) => {
   const url = content instanceof Blob ? URL.createObjectURL(content) : URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement('a');
@@ -640,7 +711,6 @@ export const downloadFile = (content: string | Blob, filename: string, type: str
   URL.revokeObjectURL(url);
 };
 
-// Globals for PDF.js and Mammoth (loaded via CDN)
 declare global {
   interface Window {
     pdfjsLib: any;
@@ -672,7 +742,6 @@ export const extractTextFromDocx = async (file: File): Promise<string> => {
 export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const lowerText = text.toLowerCase();
   
-  // 1. Check for standard sections
   const sections = {
     experience: /experience|employment|history|work/i.test(lowerText),
     education: /education|university|college|degree/i.test(lowerText),
@@ -684,12 +753,10 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const foundSections = Object.entries(sections).filter(([, found]) => found).map(([key]) => key);
   const missingSections = Object.entries(sections).filter(([, found]) => !found).map(([key]) => key);
 
-  // 2. Check for contact info
   const hasEmail = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(text);
   const hasPhone = /(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/.test(text) || /\d{10}/.test(text);
   const hasLinkedIn = /linkedin\.com\/in\//i.test(text);
 
-  // 3. Keywords / Action Verbs (Simple list)
   const actionVerbs = [
     'led', 'managed', 'developed', 'created', 'implemented', 'designed', 'improved', 
     'increased', 'reduced', 'saved', 'achieved', 'launched', 'mentored', 'analyzed'
@@ -697,37 +764,28 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const foundKeywords = actionVerbs.filter(verb => lowerText.includes(verb));
   const keywordDensity = foundKeywords.length;
 
-  // 4. Scoring Logic (Deterministic)
   let score = 0;
   const breakdown = {
-    sections: 0, // max 20
-    keywords: 0, // max 30
-    formatting: 0, // max 15
-    skills: 0, // max 15
-    clarity: 0   // max 20
+    sections: 0, 
+    keywords: 0, 
+    formatting: 0, 
+    skills: 0, 
+    clarity: 0   
   };
 
-  // Sections (20 pts)
   breakdown.sections = (foundSections.length / 5) * 20;
   score += breakdown.sections;
 
-  // Keywords (30 pts)
-  // Cap at 15 words for full points
   breakdown.keywords = Math.min((keywordDensity / 10) * 30, 30);
   score += breakdown.keywords;
 
-  // Formatting (15 pts)
-  // If we extracted text successfully, that's a good sign.
-  // Check file type
   const isPdf = fileName.toLowerCase().endsWith('.pdf');
   const isDocx = fileName.toLowerCase().endsWith('.docx');
   let formattingScore = 15;
-  if (!text || text.length < 100) formattingScore = 0; // Likely image based or empty
+  if (!text || text.length < 100) formattingScore = 0; 
   breakdown.formatting = formattingScore;
   score += breakdown.formatting;
 
-  // Skills (15 pts)
-  // Rudimentary check: if "Skills" section exists and text is long enough
   if (sections.skills) {
       breakdown.skills = 15;
   } else {
@@ -735,7 +793,6 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   }
   score += breakdown.skills;
 
-  // Clarity/Contact (20 pts)
   let clarityScore = 0;
   if (hasEmail) clarityScore += 10;
   if (hasPhone) clarityScore += 5;
@@ -743,7 +800,6 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   breakdown.clarity = clarityScore;
   score += breakdown.clarity;
 
-  // Feedback Generation
   const strengths = [];
   const improvements = [];
 
