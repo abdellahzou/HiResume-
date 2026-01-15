@@ -27,7 +27,7 @@ const SectionHeader = ({ title, className }: { title: string, className?: string
   </h2>
 );
 
-// Styles injected via CSS variables
+// Dynamic spacing styles injected via CSS variables
 const dynamicStyles = {
   section: { marginBottom: 'var(--section-spacing)' },
   item: { marginBottom: 'var(--item-spacing)' },
@@ -79,6 +79,7 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
+      {/* --- CUSTOM SECTION --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -832,6 +833,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   
   // State for layout adjustments
+  // We use CSS variables for scaling to ensure clean print overrides
   const [displayScale, setDisplayScale] = useState(1);
   const [spacingScale, setSpacingScale] = useState(1);
   const [contentScale, setContentScale] = useState(1);
@@ -889,9 +891,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
-        // Calculate scale to fit width, minus a small padding
-        // If container is wider than A4, cap at 1 (or 1.2 max for huge screens if desired)
-        const newScale = Math.min((width - 32) / A4_WIDTH_PX, 1);
+        // Updated logic: Scale to fill width minus minimal padding (10px)
+        // This fixes the "huge margins" issue
+        const availableWidth = Math.max(width - 10, 0); 
+        const newScale = Math.min(availableWidth / A4_WIDTH_PX, 1);
         setDisplayScale(Math.max(0.1, newScale));
       }
     });
@@ -915,7 +918,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         // Content Overflowing
         // 1. Try reducing spacing first
         let newSpacing = 1;
-        // Calculate ratio of overflow
         const overflowRatio = contentHeight / MAX_HEIGHT;
         
         if (overflowRatio < 1.15) {
@@ -929,12 +931,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
             
             // Wait for spacing re-render, then measure again to apply content zoom
             // We approximate for now to avoid double render loop flickering
-            // If reducing spacing to 0.4 didn't help (assuming it gives ~15% space back), scale content
-            // Simple heuristic: 
-            const approximatedHeight = contentHeight * 0.90; // generous assumption that spacing helps 10%
+            const approximatedHeight = contentHeight * 0.90; 
             if (approximatedHeight > MAX_HEIGHT) {
                 const zoom = MAX_HEIGHT / approximatedHeight;
-                setContentScale(Math.max(0.65, zoom)); // Limit zoom to 65% to stay readable
+                setContentScale(Math.max(0.65, zoom)); // Limit zoom to 65%
             }
         }
       } else {
@@ -956,22 +956,24 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   const layoutStyles = {
     '--section-spacing': `${2 * spacingScale}rem`,
     '--item-spacing': `${0.75 * spacingScale}rem`,
+    '--scale-factor': displayScale, 
+    '--content-scale': contentScale,
   } as React.CSSProperties;
 
   return (
     <div 
       ref={containerRef}
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
+      style={layoutStyles}
     >
       {/* 
         DISPLAY WRAPPER: Scales A4 to fit screen.
-        CRITICAL: @media print transform: none !important is handled by CSS class or inline override logic
-        We use a data attribute or class to help the print CSS target this.
+        We use a CSS variable for transform scale so we can override it in @media print
       */}
       <div 
         className="relative print:transform-none print:w-auto print:h-auto print:block"
         style={{
-          transform: `scale(${displayScale})`,
+          transform: `scale(var(--scale-factor))`,
           transformOrigin: 'top center',
           width: `${A4_WIDTH_PX}px`,
           height: `${A4_HEIGHT_PX}px`,
@@ -982,7 +984,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         <div
           id="resume-preview"
           ref={contentRef}
-          style={layoutStyles}
           className="bg-white shadow-2xl w-full h-full overflow-hidden print:shadow-none mx-auto print:visible"
         >
             {/* 
@@ -991,7 +992,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
                This logic persists in print to ensure no overflow.
             */}
             <div style={{ 
-                transform: `scale(${contentScale})`, 
+                transform: `scale(var(--content-scale))`, 
                 transformOrigin: 'top center',
                 height: '100%'
             }}>
@@ -1004,7 +1005,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       <div 
          className="print:hidden"
          style={{ 
-             height: `${A4_HEIGHT_PX * displayScale + 40}px`, 
+             height: `${A4_HEIGHT_PX * displayScale + 20}px`, 
              width: '1px', 
              position: 'absolute',
              pointerEvents: 'none'
