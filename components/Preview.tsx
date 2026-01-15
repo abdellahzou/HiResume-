@@ -9,10 +9,6 @@ interface PreviewProps {
   className?: string;
 }
 
-// A4 Dimensions in Pixels (96 DPI)
-const A4_WIDTH_PX = 794;
-const A4_HEIGHT_PX = 1123;
-
 // Reusable Components
 const ContactItem = ({ icon: Icon, text }: { icon: any, text: string }) => (
   <div className="flex items-center gap-1.5">
@@ -34,8 +30,8 @@ const dynamicStyles = {
 
 // --- TEMPLATE 1: MODERN ---
 const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-10 font-sans text-slate-800 print:p-8 h-full flex flex-col">
-    <header className="border-b-2 border-slate-800 pb-6 mb-8 print:pb-3 print:mb-4 flex-shrink-0">
+  <div className="p-10 font-sans text-slate-800 print:p-8">
+    <header className="border-b-2 border-slate-800 pb-6 mb-8 print:pb-3 print:mb-4">
       <h1 className="text-4xl font-extrabold uppercase tracking-tight text-slate-900 mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
       </h1>
@@ -50,7 +46,7 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
       </div>
     </header>
 
-    <div className="content-flow flex-1">
+    <div className="content-flow">
       {resume.personalInfo.summary && (
         <section style={dynamicStyles.section}>
           <SectionHeader title={t.labels.summary} className="border-b border-gray-300 pb-1" />
@@ -78,6 +74,7 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
+      {/* --- CUSTOM SECTION (MODERN) --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -172,8 +169,8 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
 
 // --- TEMPLATE 2: CLASSIC ---
 const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-serif text-slate-900 print:p-8 h-full flex flex-col">
-    <header className="text-center mb-8 border-b-2 border-black pb-6 print:mb-4 print:pb-3 flex-shrink-0">
+  <div className="p-12 font-serif text-slate-900 print:p-8">
+    <header className="text-center mb-8 border-b-2 border-black pb-6 print:mb-4 print:pb-3">
       <h1 className="text-3xl font-bold uppercase mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
       </h1>
@@ -185,7 +182,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    <div className="content-flow flex-1">
+    <div className="content-flow">
       {resume.personalInfo.summary && (
         <section style={dynamicStyles.section}>
           <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-3 pb-1 print:mb-2">{t.labels.summary}</h2>
@@ -210,6 +207,7 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
         </section>
       )}
 
+      {/* --- CUSTOM SECTION (CLASSIC) --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
            <h2 className="text-center font-bold uppercase text-sm border-b border-black mb-4 pb-1 print:mb-2">
@@ -290,8 +288,8 @@ const ClassicTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
 
 // --- TEMPLATE 3: MINIMAL ---
 const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-sans text-gray-800 print:p-8 h-full flex flex-col">
-    <header className="mb-10 print:mb-4 flex-shrink-0">
+  <div className="p-12 font-sans text-gray-800 print:p-8">
+    <header className="mb-10 print:mb-4">
       <h1 className="text-4xl font-light tracking-tight text-gray-900 mb-2 print:mb-1">
         {resume.personalInfo.fullName || t.labels.fullName}
       </h1>
@@ -303,7 +301,7 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 print:gap-4 flex-1">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 print:gap-4">
       <div className="md:col-span-1 space-y-[var(--section-spacing)]">
         {resume.education.length > 0 && (
           <section>
@@ -373,6 +371,7 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
           </section>
         )}
 
+        {/* --- CUSTOM SECTION (MINIMAL) --- */}
         {resume.customItems && resume.customItems.length > 0 && (
           <section>
             <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-6 print:mb-3">
@@ -417,7 +416,7 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
 const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
   <div className="flex h-full min-h-[297mm]">
     {/* Sidebar */}
-    <div className="w-1/3 bg-slate-100 p-8 border-r border-slate-200 print:p-6 flex flex-col gap-[var(--section-spacing)] flex-shrink-0">
+    <div className="w-1/3 bg-slate-100 p-8 border-r border-slate-200 print:p-6 flex flex-col gap-[var(--section-spacing)]">
       <div className="mb-8 print:mb-4">
         <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-2 break-words print:mb-1">
           {resume.personalInfo.fullName || t.labels.fullName}
@@ -481,7 +480,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
     </div>
 
     {/* Main Content */}
-    <div className="w-2/3 p-8 print:p-6 content-flow flex-1">
+    <div className="w-2/3 p-8 print:p-6 content-flow">
        {resume.personalInfo.summary && (
          <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-3 print:mb-2">{t.labels.summary}</h3>
@@ -509,6 +508,7 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
          </div>
        )}
 
+       {/* --- CUSTOM SECTION (PROFESSIONAL) --- */}
        {resume.customItems && resume.customItems.length > 0 && (
          <div style={dynamicStyles.section}>
             <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide mb-4 print:mb-2">
@@ -551,8 +551,8 @@ const ProfessionalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = (
 
 // --- TEMPLATE 5: CREATIVE ---
 const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="font-sans h-full flex flex-col">
-     <header className="bg-slate-900 text-white p-10 print:p-6 flex-shrink-0">
+  <div className="font-sans h-full">
+     <header className="bg-slate-900 text-white p-10 print:p-6">
         <h1 className="text-5xl font-bold mb-2 print:text-3xl print:mb-1">{resume.personalInfo.fullName || t.labels.fullName}</h1>
         <p className="text-xl text-blue-300 font-medium tracking-wide mb-6 print:text-base print:mb-3">{resume.personalInfo.title}</p>
         
@@ -563,7 +563,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
         </div>
      </header>
 
-     <div className="p-10 grid grid-cols-1 gap-[var(--section-spacing)] print:p-6 flex-1">
+     <div className="p-10 grid grid-cols-1 gap-[var(--section-spacing)] print:p-6">
         {resume.personalInfo.summary && (
           <section className="bg-slate-50 p-6 rounded-lg border-l-4 border-blue-500 print:p-4">
              <p className="text-slate-700 text-lg leading-relaxed italic print:text-sm print:leading-tight">"{resume.personalInfo.summary}"</p>
@@ -592,6 +592,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
                 </div>
               )}
 
+              {/* --- CUSTOM SECTION (CREATIVE) --- */}
               {resume.customItems && resume.customItems.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6 print:text-lg print:mb-3">
@@ -695,8 +696,8 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
 
 // --- TEMPLATE 6: EXECUTIVE ---
 const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resume, t }) => (
-  <div className="p-12 font-serif text-slate-800 border-t-8 border-slate-800 print:p-8 h-full flex flex-col">
-     <div className="flex justify-between items-start mb-12 print:mb-6 flex-shrink-0">
+  <div className="p-12 font-serif text-slate-800 border-t-8 border-slate-800 print:p-8 h-full">
+     <div className="flex justify-between items-start mb-12 print:mb-6">
         <div>
            <h1 className="text-4xl font-bold text-slate-900 mb-2 uppercase tracking-widest print:text-3xl print:mb-1">{resume.personalInfo.fullName || t.labels.fullName}</h1>
            <p className="text-lg italic text-slate-600 print:text-base">{resume.personalInfo.title}</p>
@@ -708,7 +709,7 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
         </div>
      </div>
 
-     <div className="content-flow flex-1">
+     <div className="content-flow">
        {resume.personalInfo.summary && (
           <div style={dynamicStyles.section} className="border-b border-slate-200 pb-6 print:pb-3">
              <p className="text-lg leading-relaxed text-slate-700 print:text-base print:leading-tight">{resume.personalInfo.summary}</p>
@@ -736,6 +737,7 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
          </div>
        )}
 
+       {/* --- CUSTOM SECTION (EXECUTIVE) --- */}
        {resume.customItems && resume.customItems.length > 0 && (
          <div style={dynamicStyles.section}>
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6 print:mb-3">
@@ -827,11 +829,10 @@ const ExecutiveTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ r
 
 export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   const { resume } = useResumeStore();
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // State for layout adjustments
-  const [displayScale, setDisplayScale] = useState(1);
+  const [zoomScale, setZoomScale] = useState(1);
   const [spacingScale, setSpacingScale] = useState(1);
 
   const TemplateComponent = {
@@ -882,8 +883,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       ...resume,
       experience: sortGeneral(resume.experience),
       education: sortGeneral(resume.education),
-      // Ensure projects are mapped and sorted
-      projects: resume.projects || [],
       // Sort customItems if they exist, otherwise return empty array
       customItems: sortGeneral(safeResume.customItems || []),
       certifications: sortCertifications(resume.certifications)
@@ -891,84 +890,53 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   }, [resume]);
 
 
-  // --- 1. DISPLAY SCALING (View-Only) ---
-  // Calculates how much to shrink/grow the 794px container to fit the screen/sidebar
+  // --- AUTO-SIZING LOGIC ---
   useEffect(() => {
-    const handleResize = () => {
-      if (!wrapperRef.current) return;
-      const parentWidth = wrapperRef.current.parentElement?.clientWidth || A4_WIDTH_PX;
-      const padding = 32; // Safety margin
-      const newScale = (parentWidth - padding) / A4_WIDTH_PX; 
-      // Cap max scale at 1.0 (never larger than actual A4)
-      setDisplayScale(Math.min(newScale, 1.2)); 
-    };
+    if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (wrapperRef.current?.parentElement) {
-      resizeObserver.observe(wrapperRef.current.parentElement);
-    }
-    
-    handleResize();
-    return () => resizeObserver.disconnect();
-  }, []);
+    // Use a safe A4 Height
+    const TARGET_HEIGHT = 1080; 
+    const isMobile = window.innerWidth < 800; 
 
-  // --- 2. AUTO-FITTING CONTENT (Logic) ---
-  // Calculates the 'spacingScale' to fit content into the A4_HEIGHT_PX (1123px)
-  useEffect(() => {
-    // Reset spacing to standard to measure true height
+    setZoomScale(1);
     setSpacingScale(1);
 
-    const fitContent = () => {
-      if (!contentRef.current) return;
-      
-      const currentHeight = contentRef.current.scrollHeight;
-      const targetHeight = A4_HEIGHT_PX; // Fixed A4 height (1123px)
+    setTimeout(() => {
+      if (!containerRef.current) return;
+      const contentHeight = containerRef.current.scrollHeight;
 
-      // Content too big: Shrink
-      if (currentHeight > targetHeight) {
-        const newScale = targetHeight / currentHeight;
-        // Don't shrink below 50% to stay readable
-        setSpacingScale(Math.max(0.5, newScale)); 
+      // Mobile print prediction: 
+      const perceivedPrintHeight = isMobile ? contentHeight * 0.85 : contentHeight;
+
+      if (perceivedPrintHeight > TARGET_HEIGHT) {
+        // Content too big: Shrink
+        const newScale = TARGET_HEIGHT / perceivedPrintHeight;
+        setZoomScale(Math.max(0.65, newScale));
+        setSpacingScale(1); 
       } else {
-        // Content too small: Expand Spacing (Fill the page nicely)
-        const emptySpace = targetHeight - currentHeight;
-        const expansionFactor = 1 + (emptySpace / 800); 
-        // Cap expansion
-        setSpacingScale(Math.min(1.6, expansionFactor));
+        // Content too small: Expand Spacing
+        const emptySpace = TARGET_HEIGHT - perceivedPrintHeight;
+        const expansionFactor = 1 + (emptySpace / 600); 
+        setSpacingScale(Math.min(2.4, expansionFactor));
+        setZoomScale(1); 
       }
-    };
+    }, 100);
+  }, [sortedResume, t]); 
 
-    const timer = setTimeout(fitContent, 60);
-    return () => clearTimeout(timer);
-  }, [sortedResume, resume.templateId, t]); 
-
-  // Combined Styles
   const layoutStyles = {
-    '--section-spacing': `${1.8 * spacingScale}rem`,
+    '--section-spacing': `${2 * spacingScale}rem`,
     '--item-spacing': `${0.75 * spacingScale}rem`,
+    zoom: zoomScale,
   } as React.CSSProperties;
 
   return (
     <div 
-      ref={wrapperRef}
-      className={clsx("w-full flex justify-center py-8 print:p-0", className)}
-      // Height matches the scaled A4 height
-      style={{ height: `${A4_HEIGHT_PX * displayScale + 60}px` }} 
+      id="resume-preview" 
+      ref={containerRef}
+      style={layoutStyles}
+      className={clsx("a4-page bg-white shadow-lg mx-auto overflow-hidden origin-top", className)}
     >
-      <div 
-        id="resume-preview" 
-        ref={contentRef}
-        style={{
-           ...layoutStyles,
-           width: `${A4_WIDTH_PX}px`,
-           height: `${A4_HEIGHT_PX}px`,
-           transform: `scale(${displayScale})`,
-           transformOrigin: 'top center',
-        }}
-        className="bg-white shadow-2xl origin-top print:shadow-none print:transform-none overflow-hidden absolute top-8 print:top-0 print:left-0"
-      >
-        <TemplateComponent resume={sortedResume} t={t} />
-      </div>
+      <TemplateComponent resume={sortedResume} t={t} />
     </div>
   );
 };
