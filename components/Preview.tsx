@@ -27,7 +27,7 @@ const SectionHeader = ({ title, className }: { title: string, className?: string
   </h2>
 );
 
-// Dynamic spacing styles injected via CSS variables
+// Styles injected via CSS variables
 const dynamicStyles = {
   section: { marginBottom: 'var(--section-spacing)' },
   item: { marginBottom: 'var(--item-spacing)' },
@@ -79,7 +79,6 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
-      {/* --- CUSTOM SECTION --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -835,6 +834,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   // State for layout adjustments
   const [displayScale, setDisplayScale] = useState(1);
   const [spacingScale, setSpacingScale] = useState(1);
+  const [contentScale, setContentScale] = useState(1);
 
   const TemplateComponent = {
     modern: ModernTemplate,
@@ -900,30 +900,56 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     return () => observer.disconnect();
   }, []);
 
-  // --- 2. CONTENT SPACING LOGIC (Fit Content to A4 Height) ---
+  // --- 2. CONTENT SPACING & SCALING LOGIC (Fix Overflow) ---
   useEffect(() => {
-    // Reset spacing to calculate natural height
+    // Reset to initial state
     setSpacingScale(1);
+    setContentScale(1);
 
-    setTimeout(() => {
+    const fitContent = () => {
       if (!contentRef.current) return;
       const contentHeight = contentRef.current.scrollHeight;
-      
-      // Target height is A4 height minus some safety padding (approx 40px)
-      const MAX_HEIGHT = A4_HEIGHT_PX - 40;
+      const MAX_HEIGHT = A4_HEIGHT_PX - 20; // 20px safety buffer
 
       if (contentHeight > MAX_HEIGHT) {
-        // Content too tall: Shrink spacing
-        // Don't shrink below 0.6x to maintain readability
-        const scale = Math.max(0.6, MAX_HEIGHT / contentHeight);
-        setSpacingScale(scale);
+        // Content Overflowing
+        // 1. Try reducing spacing first
+        let newSpacing = 1;
+        // Calculate ratio of overflow
+        const overflowRatio = contentHeight / MAX_HEIGHT;
+        
+        if (overflowRatio < 1.15) {
+            // Mild overflow: just shrink spacing (down to 0.4x)
+            newSpacing = Math.max(0.4, 1.4 - (overflowRatio - 1) * 4);
+            setSpacingScale(newSpacing);
+        } else {
+            // Severe overflow: shrink spacing to min AND zoom content
+            newSpacing = 0.4;
+            setSpacingScale(0.4);
+            
+            // Wait for spacing re-render, then measure again to apply content zoom
+            // We approximate for now to avoid double render loop flickering
+            // If reducing spacing to 0.4 didn't help (assuming it gives ~15% space back), scale content
+            // Simple heuristic: 
+            const approximatedHeight = contentHeight * 0.90; // generous assumption that spacing helps 10%
+            if (approximatedHeight > MAX_HEIGHT) {
+                const zoom = MAX_HEIGHT / approximatedHeight;
+                setContentScale(Math.max(0.65, zoom)); // Limit zoom to 65% to stay readable
+            }
+        }
       } else {
-        // Content short: Expand spacing slightly to fill space (up to 2.5x)
+        // Content Fits: Maybe expand spacing if it's too short
         const emptySpace = MAX_HEIGHT - contentHeight;
-        const expansionFactor = 1 + (emptySpace / 800);
-        setSpacingScale(Math.min(2.5, expansionFactor));
+        if (emptySpace > 100) {
+             const expansionFactor = 1 + (emptySpace / 1500);
+             setSpacingScale(Math.min(2.0, expansionFactor));
+        }
       }
-    }, 50); // Small delay to let DOM render
+    };
+
+    // Debounce slightly to allow DOM to settle
+    const timer = setTimeout(fitContent, 50);
+    return () => clearTimeout(timer);
   }, [sortedResume, t, resume.templateId]); 
 
   // Variables injected into the A4 container
@@ -938,40 +964,45 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
     >
       {/* 
-        This wrapper applies the Display Scale. 
-        It scales the inner A4 content to fit the screen.
-        transform-origin top center keeps it centered.
-        Height is adjusted so parent scrollbars work correctly.
+        DISPLAY WRAPPER: Scales A4 to fit screen.
+        CRITICAL: @media print transform: none !important is handled by CSS class or inline override logic
+        We use a data attribute or class to help the print CSS target this.
       */}
       <div 
+        className="relative print:transform-none print:w-auto print:h-auto print:block"
         style={{
           transform: `scale(${displayScale})`,
           transformOrigin: 'top center',
           width: `${A4_WIDTH_PX}px`,
           height: `${A4_HEIGHT_PX}px`,
-          // Prevent shrinking below the calculated height in flex container
           flexShrink: 0,
-          // When printing, remove all scaling and force A4 size
-          '@media print': { transform: 'none' }
         }}
-        className="relative print:transform-none"
       >
         {/* The Actual A4 Page */}
         <div
           id="resume-preview"
           ref={contentRef}
           style={layoutStyles}
-          className="bg-white shadow-2xl w-full h-full overflow-hidden print:shadow-none mx-auto"
+          className="bg-white shadow-2xl w-full h-full overflow-hidden print:shadow-none mx-auto print:visible"
         >
-          <TemplateComponent resume={sortedResume} t={t} />
+            {/* 
+               CONTENT ZOOM WRAPPER:
+               This scales the internal content if it's too long, like a "Fit to Page" printer setting.
+               This logic persists in print to ensure no overflow.
+            */}
+            <div style={{ 
+                transform: `scale(${contentScale})`, 
+                transformOrigin: 'top center',
+                height: '100%'
+            }}>
+                <TemplateComponent resume={sortedResume} t={t} />
+            </div>
         </div>
       </div>
       
-      {/* 
-         Phantom Spacer to ensure parent container scrolls if content is tall
-         scaled height + margin
-      */}
+      {/* Phantom Spacer for scrolling */}
       <div 
+         className="print:hidden"
          style={{ 
              height: `${A4_HEIGHT_PX * displayScale + 40}px`, 
              width: '1px', 
