@@ -654,6 +654,18 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
     return [table];
 };
 
+export const generateLatex = (data: ResumeData, t: Translation): string => {
+  switch (data.templateId) {
+    case 'classic': return latexClassic(data, t);
+    case 'professional': return latexSidebar(data, t, false);
+    case 'minimal': return latexSidebar(data, t, true);
+    case 'executive': return latexClassic(data, t);
+    case 'creative': return latexModern(data, t);
+    case 'modern':
+    default: return latexModern(data, t);
+  }
+};
+
 export const generateDocx = async (data: ResumeData, t: Translation): Promise<Blob> => {
   let children;
 
