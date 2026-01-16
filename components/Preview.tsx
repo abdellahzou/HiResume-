@@ -304,8 +304,9 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div className="md:col-span-1 space-y-[var(--section-spacing)]">
+    {/* FIXED: Removed responsive md: classes. Always use 4 columns for A4 layout */}
+    <div className="grid grid-cols-4 gap-8">
+      <div className="col-span-1 space-y-[var(--section-spacing)]">
         {resume.education.length > 0 && (
           <section>
             <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">{t.headings.education}</h3>
@@ -350,7 +351,7 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
         )}
       </div>
 
-      <div className="md:col-span-3 space-y-[var(--section-spacing)]">
+      <div className="col-span-3 space-y-[var(--section-spacing)]">
         {resume.personalInfo.summary && (
           <section>
              <h3 className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">{t.labels.summary}</h3>
@@ -571,6 +572,7 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
           </section>
         )}
 
+        {/* FIXED: Removed responsive grid. Always 3 columns */}
         <div className="grid grid-cols-3 gap-10">
            <div className="col-span-2 space-y-[var(--section-spacing)]">
               {resume.experience.length > 0 && (
@@ -908,7 +910,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     const fitContent = () => {
       if (!contentRef.current) return;
       const contentHeight = contentRef.current.scrollHeight;
-      const MAX_HEIGHT = A4_HEIGHT_PX - 20; // 20px safety buffer
+      // UPDATED: Increased safety buffer from 20px to 40px to handle print margins
+      const MAX_HEIGHT = A4_HEIGHT_PX - 40; 
 
       if (contentHeight > MAX_HEIGHT) {
         // Content Overflowing
