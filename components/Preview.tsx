@@ -79,7 +79,6 @@ const ModernTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ resu
         </section>
       )}
 
-      {/* --- CUSTOM SECTION --- */}
       {resume.customItems && resume.customItems.length > 0 && (
         <section style={dynamicStyles.section}>
           <SectionHeader 
@@ -890,7 +889,6 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
-        // Updated logic: Scale to fill width minus minimal padding (10px)
         const availableWidth = Math.max(width - 10, 0); 
         const newScale = Math.min(availableWidth / A4_WIDTH_PX, 1);
         setDisplayScale(Math.max(0.1, newScale));
@@ -914,28 +912,24 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
 
       if (contentHeight > MAX_HEIGHT) {
         // Content Overflowing
-        // 1. Try reducing spacing first
         let newSpacing = 1;
         const overflowRatio = contentHeight / MAX_HEIGHT;
         
         if (overflowRatio < 1.15) {
-            // Mild overflow: just shrink spacing (down to 0.4x)
             newSpacing = Math.max(0.4, 1.4 - (overflowRatio - 1) * 4);
             setSpacingScale(newSpacing);
         } else {
-            // Severe overflow: shrink spacing to min AND zoom content
             newSpacing = 0.4;
             setSpacingScale(0.4);
             
-            // Wait for spacing re-render, then measure again to apply content zoom
             const approximatedHeight = contentHeight * 0.90; 
             if (approximatedHeight > MAX_HEIGHT) {
                 const zoom = MAX_HEIGHT / approximatedHeight;
-                setContentScale(Math.max(0.65, zoom)); // Limit zoom to 65%
+                setContentScale(Math.max(0.65, zoom)); 
             }
         }
       } else {
-        // Content Fits: Maybe expand spacing if it's too short
+        // Content Fits
         const emptySpace = MAX_HEIGHT - contentHeight;
         if (emptySpace > 100) {
              const expansionFactor = 1 + (emptySpace / 1500);
@@ -949,24 +943,27 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
   }, [sortedResume, t, resume.templateId]); 
 
   // Variables injected into the A4 container
-  const layoutStyles = {
+  const contentStyles = {
     '--section-spacing': `${2 * spacingScale}rem`,
     '--item-spacing': `${0.75 * spacingScale}rem`,
-    '--scale-factor': displayScale, 
     '--content-scale': contentScale,
   } as React.CSSProperties;
 
   return (
     <div 
+      id="preview-wrapper"
       ref={containerRef}
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
-      style={layoutStyles}
     >
-      {/* DISPLAY WRAPPER: Scales A4 to fit screen */}
+      {/* 
+        DISPLAY WRAPPER: Scales A4 to fit screen.
+        This transform is REMOVED when targeting #resume-preview-content for print via Utils
+      */}
       <div 
+        id="resume-preview-wrapper"
         className="relative"
         style={{
-          transform: `scale(var(--scale-factor))`,
+          transform: `scale(${displayScale})`,
           transformOrigin: 'top center',
           width: `${A4_WIDTH_PX}px`,
           height: `${A4_HEIGHT_PX}px`,
@@ -975,13 +972,14 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       >
         {/* 
            THE ACTUAL RESUME CONTENT
-           We attach the ID here so the utility function clones JUST this card.
-           Note: The style attribute here contains spacingScale which IS desired in the print.
+           This ID is targeted by the utils.printResume function.
+           CRITICAL: The style attribute with CSS variables must be HERE so they are copied to the iframe.
         */}
         <div
           id="resume-preview-content"
           ref={contentRef}
           className="bg-white shadow-2xl w-full h-full overflow-hidden mx-auto"
+          style={contentStyles}
         >
             {/* CONTENT ZOOM WRAPPER: Internal scaling for overflow protection */}
             <div style={{ 
@@ -996,6 +994,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       
       {/* Phantom Spacer for scrolling */}
       <div 
+         className="print:hidden"
          style={{ 
              height: `${A4_HEIGHT_PX * displayScale + 20}px`, 
              width: '1px', 
