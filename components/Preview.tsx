@@ -304,7 +304,6 @@ const MinimalTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ res
       </div>
     </header>
 
-    {/* FIXED: Removed responsive md: classes. Always use 4 columns for A4 layout */}
     <div className="grid grid-cols-4 gap-8">
       <div className="col-span-1 space-y-[var(--section-spacing)]">
         {resume.education.length > 0 && (
@@ -572,7 +571,6 @@ const CreativeTemplate: React.FC<{ resume: ResumeData, t: Translation }> = ({ re
           </section>
         )}
 
-        {/* FIXED: Removed responsive grid. Always 3 columns */}
         <div className="grid grid-cols-3 gap-10">
            <div className="col-span-2 space-y-[var(--section-spacing)]">
               {resume.experience.length > 0 && (
@@ -910,7 +908,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     const fitContent = () => {
       if (!contentRef.current) return;
       const contentHeight = contentRef.current.scrollHeight;
-      // UPDATED: Increased safety buffer from 20px to 40px to handle print margins
+      // Increased safety buffer to 40px to prevent print clipping
       const MAX_HEIGHT = A4_HEIGHT_PX - 40; 
 
       if (contentHeight > MAX_HEIGHT) {
@@ -919,12 +917,15 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         const overflowRatio = contentHeight / MAX_HEIGHT;
         
         if (overflowRatio < 1.15) {
+            // Mild overflow: just shrink spacing (down to 0.4x)
             newSpacing = Math.max(0.4, 1.4 - (overflowRatio - 1) * 4);
             setSpacingScale(newSpacing);
         } else {
+            // Severe overflow: shrink spacing to min AND zoom content
             newSpacing = 0.4;
             setSpacingScale(0.4);
             
+            // Wait for spacing re-render, then measure again to apply content zoom
             const approximatedHeight = contentHeight * 0.90; 
             if (approximatedHeight > MAX_HEIGHT) {
                 const zoom = MAX_HEIGHT / approximatedHeight;
@@ -932,7 +933,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
             }
         }
       } else {
-        // Content Fits
+        // Content Fits: Maybe expand spacing if it's too short
         const emptySpace = MAX_HEIGHT - contentHeight;
         if (emptySpace > 100) {
              const expansionFactor = 1 + (emptySpace / 1500);
@@ -984,10 +985,14 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
           className="bg-white shadow-2xl w-full h-full overflow-hidden mx-auto"
           style={contentStyles}
         >
-            {/* CONTENT ZOOM WRAPPER: Internal scaling for overflow protection */}
+            {/* 
+                CONTENT ZOOM WRAPPER: Internal scaling for overflow protection 
+                Added WIDTH compensation to prevent margin squeezing.
+            */}
             <div style={{ 
                 transform: `scale(var(--content-scale))`, 
                 transformOrigin: 'top center',
+                width: 'calc(100% / var(--content-scale))',
                 height: '100%'
             }}>
                 <TemplateComponent resume={sortedResume} t={t} />
