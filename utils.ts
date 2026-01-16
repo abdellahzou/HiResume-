@@ -15,24 +15,13 @@ import {
   convertInchesToTwip
 } from "docx";
 
-// ... [Keep all existing Latex/Docx/ATS code below unchanged] ...
-// ... [Just insert this new function at the very top or bottom] ...
-
-/**
- * Creates an isolated iframe, copies the resume content and styles into it,
- * and triggers the browser print dialog. This ensures WYSIWYG output
- * without blank pages or UI interference.
- */
 export const printResume = () => {
-  // 1. Target the specific content we want to print
-  // We target the inner-most A4 container that holds the actual content
   const content = document.getElementById('resume-preview-content');
   if (!content) {
     console.error("Resume content not found");
     return;
   }
 
-  // 2. Create an invisible iframe
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -42,22 +31,17 @@ export const printResume = () => {
   iframe.style.border = '0';
   document.body.appendChild(iframe);
 
-  // 3. specific content to the iframe document
   const doc = iframe.contentWindow?.document;
   if (!doc) return;
 
   doc.open();
   doc.write('<!DOCTYPE html><html><head><title>Resume</title>');
   
-  // 4. Copy all styles (Tailwind, Fonts, etc.)
-  // This ensures the print looks exactly like the screen
   const styles = document.querySelectorAll('link[rel="stylesheet"], style');
   styles.forEach((styleNode) => {
     doc.write(styleNode.outerHTML);
   });
 
-  // 5. Add custom print-specific styles to the iframe
-  // Forces A4, removes margins, ensures graphics (bg colors) print
   doc.write(`
     <style>
       @page { size: A4; margin: 0; }
@@ -67,10 +51,12 @@ export const printResume = () => {
         -webkit-print-color-adjust: exact; 
         print-color-adjust: exact;
         background-color: white;
+        overflow: hidden; /* Prevent spillover */
       }
       #resume-preview-content {
-        width: 210mm !important;
-        min-height: 297mm !important;
+        /* EXACT PIXEL MATCH for 96DPI A4 */
+        width: 794px !important;
+        min-height: 1123px !important;
         box-shadow: none !important;
         margin: 0 auto !important;
         /* Ensure no transforms scale it down */
@@ -81,20 +67,15 @@ export const printResume = () => {
   
   doc.write('</head><body>');
   
-  // 6. Write the actual resume HTML
-  // We clone the node to get the current state of the DOM
   doc.write(content.outerHTML);
   doc.write('</body></html>');
   doc.close();
 
-  // 7. Wait for resources to load, then print
   iframe.onload = () => {
-    // Small timeout to ensure font rendering
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
       
-      // Cleanup iframe after printing (delay to allow print dialog to open)
       setTimeout(() => {
         document.body.removeChild(iframe);
       }, 1000);
@@ -102,9 +83,9 @@ export const printResume = () => {
   };
 };
 
-// --- REST OF YOUR UTILS.TS (Latex, Docx, etc.) STAYS THE SAME ---
-// ...
-// ...
+// ... [Rest of utils.ts content - LaTeX/DOCX/ATS logic] ...
+// ... [Ensure you keep the existing exports below this line] ...
+
 const sanitize = (str: string) => str ? str.replace(/([&%$#_{}])/g, '\\$1') : '';
 
 const latexColors = `
@@ -354,18 +335,6 @@ ${!isMinimal ? `
 `}
 \\end{document}
 `;
-
-export const generateLatex = (data: ResumeData, t: Translation): string => {
-  switch (data.templateId) {
-    case 'classic': return latexClassic(data, t);
-    case 'professional': return latexSidebar(data, t, false);
-    case 'minimal': return latexSidebar(data, t, true);
-    case 'executive': return latexClassic(data, t);
-    case 'creative': return latexModern(data, t);
-    case 'modern':
-    default: return latexModern(data, t);
-  }
-};
 
 const createStyledDoc = (children: any[], templateId: string) => {
   const isSerif = ['classic', 'executive'].includes(templateId);
