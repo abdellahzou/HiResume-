@@ -908,7 +908,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     const fitContent = () => {
       if (!contentRef.current) return;
       const contentHeight = contentRef.current.scrollHeight;
-      const MAX_HEIGHT = A4_HEIGHT_PX - 40; 
+      const MAX_HEIGHT = A4_HEIGHT_PX - 40; // 40px safety buffer for print margins
 
       if (contentHeight > MAX_HEIGHT) {
         // Content Overflowing
@@ -916,20 +916,23 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         const overflowRatio = contentHeight / MAX_HEIGHT;
         
         if (overflowRatio < 1.15) {
+            // Mild overflow: just shrink spacing (down to 0.4x)
             newSpacing = Math.max(0.4, 1.4 - (overflowRatio - 1) * 4);
             setSpacingScale(newSpacing);
         } else {
+            // Severe overflow: shrink spacing to min AND zoom content
             newSpacing = 0.4;
             setSpacingScale(0.4);
             
+            // Apply scale multiplier 0.98 as extra print safety factor
             const approximatedHeight = contentHeight * 0.90; 
             if (approximatedHeight > MAX_HEIGHT) {
-                const zoom = MAX_HEIGHT / approximatedHeight;
+                const zoom = (MAX_HEIGHT / approximatedHeight) * 0.98;
                 setContentScale(Math.max(0.65, zoom)); 
             }
         }
       } else {
-        // Content Fits
+        // Content Fits: Maybe expand spacing if it's too short
         const emptySpace = MAX_HEIGHT - contentHeight;
         if (emptySpace > 100) {
              const expansionFactor = 1 + (emptySpace / 1500);
@@ -955,6 +958,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
       ref={containerRef}
       className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
     >
+      {/* 
+        DISPLAY WRAPPER: Scales A4 to fit screen.
+        This transform is REMOVED when targeting #resume-preview-content for print via Utils
+      */}
       <div 
         id="resume-preview-wrapper"
         className="relative"
@@ -966,6 +973,10 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
           flexShrink: 0,
         }}
       >
+        {/* 
+           THE ACTUAL RESUME CONTENT
+           This ID is targeted by the utils.printResume function.
+        */}
         <div
           id="resume-preview-content"
           ref={contentRef}
@@ -974,8 +985,8 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         >
             {/* 
                 CONTENT ZOOM WRAPPER:
-                - transformOrigin: 'top left' ensures it anchors to the left (Fixing the empty left margin).
-                - width: increases to compensate for scale, filling the page width.
+                - transformOrigin: 'top left' ensures scaling starts from the edge (Fixes left margin gap)
+                - width: compensates for scale to fill the page width
             */}
             <div style={{ 
                 transform: `scale(var(--content-scale))`, 
