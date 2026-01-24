@@ -356,7 +356,6 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
         </div>
       </div>
-    </div >
     </>
   )
 }
