@@ -1,363 +1,829 @@
-import type React from "react"
-import { useEffect, useRef } from "react"
-import { useResumeStore } from "../store"
-import type { Translation, TemplateId } from "../types"
-import { Editor } from "./Editor"
-import { Preview } from "./Preview"
-import { AdSpace } from "./AdSpace"
-import { SHOW_ADS } from "../constants"
-import { generateLatex, generateDocx, downloadFile, printResume } from "../utils"
+import { ResumeData, Translation, AtsResult } from './types';
 import {
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Printer,
-  FileText,
-  Code,
-  Download,
-  Menu,
-  User,
-} from "lucide-react"
+  Packer,
+  Document,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  BorderStyle,
+  ShadingType,
+  convertInchesToTwip
+} from "docx";
 
-interface BuilderProps {
-  t: Translation
+export const printResume = (contentScale: number = 1) => {
+  const content = document.getElementById('resume-preview-content');
+  if (!content) {
+    console.error("Resume content not found");
+    return;
+  }
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc) return;
+
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><title>Resume</title>');
+
+  const styles = document.querySelectorAll('link[rel="stylesheet"], style');
+  styles.forEach((styleNode) => {
+    doc.write(styleNode.outerHTML);
+  });
+
+  doc.write(`
+    <style>
+      @page { size: A4; margin: 0; }
+      html, body { 
+        width: 210mm;
+        height: 297mm;
+        margin: 0; 
+        padding: 0; 
+        overflow: hidden; /* Strict Page 1 enforcement */
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
+        background-color: white;
+      }
+      #resume-preview-content {
+        width: 210mm !important;
+        height: 297mm !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        transform: none !important; 
+      }
+      /* Apply contentScale to the inner wrapper */
+      #resume-preview-content > div {
+        transform: scale(${contentScale}) !important;
+        transform-origin: top left !important;
+        width: calc(100% / ${contentScale}) !important;
+        height: auto !important;
+      }
+      #resume-preview-content > div > div {
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+      }
+    </style>
+  `);
+
+  doc.write('</head><body>');
+
+  doc.write(content.outerHTML);
+  doc.write('</body></html>');
+  doc.close();
+
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }, 500);
+  };
+};
+
+// ... [Keep existing DOCX/LaTeX/ATS code below unchanged] ...
+// ... [Only showing top part for brevity as requested, rest is identical] ...
+
+const sanitize = (str: string) => str ? str.replace(/([&%$#_{}])/g, '\\$1') : '';
+
+const latexColors = `
+\\usepackage{xcolor}
+\\definecolor{primary}{RGB}{37, 99, 235}   % Blue-600
+\\definecolor{darktext}{RGB}{15, 23, 42}   % Slate-900
+\\definecolor{subtext}{RGB}{71, 85, 105}   % Slate-600
+\\definecolor{lightgray}{RGB}{241, 245, 249} % Slate-100
+`;
+
+const latexIcons = `
+% Fallback for icons if fontawesome is missing
+\\newcommand{\\iconEmail}{$\\otimes$}
+\\newcommand{\\iconPhone}{$\\circ$}
+\\newcommand{\\iconMap}{$\\diamond$}
+\\newcommand{\\iconLink}{$\\rightarrow$}
+`;
+
+const latexModern = (data: ResumeData, t: Translation) => `
+\\documentclass[a4paper,10pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[empty]{fullpage}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\usepackage[hidelinks]{hyperref}
+${latexColors}
+${latexIcons}
+
+\\renewcommand{\\familydefault}{\\sfdefault} % Sans-serif
+
+% Header Style
+\\newcommand{\\resumeHeader}[4]{
+  \\begin{center}
+    {\\Huge \\bfseries \\color{darktext} #1} \\\\[4pt]
+    {\\Large \\color{primary} #2} \\\\[4pt]
+    \\small \\color{subtext} #3 \\quad #4
+  \\end{center}
 }
 
-export const Builder: React.FC<BuilderProps> = ({ t }) => {
-  const { currentStep, setStep, resume, setTemplateId, contentScale } = useResumeStore()
-  const stepperRef = useRef<HTMLDivElement>(null)
+% Section Style
+\\titleformat{\\section}{\\large\\bfseries\\color{darktext}\\uppercase}{}{0em}{}[{\\color{gray}\\titlerule}]
 
-  const steps = [
-    { id: 0, label: t.steps.personal },
-    { id: 1, label: t.steps.experience },
-    { id: 2, label: t.steps.projects },
-    { id: 3, label: t.steps.education },
-    { id: 4, label: t.steps.certifications },
-    { id: 5, label: t.steps.skills },
-    { id: 6, label: "Custom" },
-    { id: 7, label: t.steps.preview },
-  ]
+\\begin{document}
 
-  const templates: { id: TemplateId; name: string }[] = [
-    { id: "modern", name: "Modern" },
-    { id: "classic", name: "Classic" },
-    { id: "minimal", name: "Minimal" },
-    { id: "executive", name: "Executive" },
-  ]
+\\resumeHeader{${sanitize(data.personalInfo.fullName)}}{${sanitize(data.personalInfo.title)}}{${sanitize(data.personalInfo.email)} | ${sanitize(data.personalInfo.phone)}}{${sanitize(data.personalInfo.location)}}
 
-  useEffect(() => {
-    const el = stepperRef.current?.querySelector('[data-active="true"]')
-    el?.scrollIntoView({ behavior: "smooth", inline: "center" })
-  }, [currentStep])
+${data.personalInfo.summary ? `\\section{${t.labels.summary}}\n${sanitize(data.personalInfo.summary)}` : ''}
 
-  // UPDATED: Use printResume utility instead of window.print()
-  const handlePdfExport = () => printResume(contentScale)
+${data.experience.length > 0 ? `\\section{${t.headings.experience}}
+\\begin{itemize}[leftmargin=0in, label={}]
+${data.experience.map(exp => `
+    \\item
+    \\textbf{${sanitize(exp.position)}} | ${sanitize(exp.company)} \\hfill \\textit{${sanitize(exp.startDate)} -- ${exp.current ? t.labels.present : sanitize(exp.endDate)}}
+    \\begin{itemize}[leftmargin=0.15in]
+        \\item ${sanitize(exp.description).replace(/\n/g, '\n        \\item ')}
+    \\end{itemize}
+`).join('')}
+\\end{itemize}` : ''}
 
-  const handleDocxExport = async () => {
-    const blob = await generateDocx(resume, t)
-    downloadFile(
-      blob,
-      "resume.docx",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
+${data.projects.length > 0 ? `\\section{${t.headings.projects}}
+\\begin{itemize}[leftmargin=0in, label={}]
+${data.projects.map(proj => `
+    \\item
+    \\textbf{${sanitize(proj.name)}} ${proj.link ? `| \\href{${proj.link}}{Link}` : ''} \\\\
+    ${sanitize(proj.description)}
+`).join('')}
+\\end{itemize}` : ''}
+
+${data.education.length > 0 ? `\\section{${t.headings.education}}
+\\begin{itemize}[leftmargin=0in, label={}]
+${data.education.map(edu => `
+    \\item
+    \\textbf{${sanitize(edu.school)}} \\hfill ${sanitize(edu.startDate)} -- ${edu.current ? t.labels.present : sanitize(edu.endDate)} \\\\
+    ${sanitize(edu.degree)}
+`).join('')}
+\\end{itemize}` : ''}
+
+${data.skills.length > 0 ? `\\section{${t.headings.skills}}
+${data.skills.map(s => `\\colorbox{lightgray}{\\strut ${sanitize(s.name)}}`).join(' ')}` : ''}
+
+\\end{document}
+`;
+
+const latexClassic = (data: ResumeData, t: Translation) => `
+\\documentclass[a4paper,11pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[empty]{fullpage}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage{times} % Times New Roman
+${latexColors}
+
+% Section Style (Centered, Serif)
+\\titleformat{\\section}{\\large\\bfseries\\uppercase\\centering}{}{0em}{}[\\titlerule]
+
+\\begin{document}
+
+\\begin{center}
+    {\\Huge \\textsc{${sanitize(data.personalInfo.fullName)}}} \\\\
+    \\vspace{5pt}
+    ${sanitize(data.personalInfo.location)} $\\bullet$ ${sanitize(data.personalInfo.phone)} $\\bullet$ ${sanitize(data.personalInfo.email)}
+    ${data.personalInfo.website ? `\\\\ ${sanitize(data.personalInfo.website)}` : ''}
+\\end{center}
+
+\\vspace{10pt}
+
+${data.personalInfo.summary ? `\\section{${t.labels.summary}}\n${sanitize(data.personalInfo.summary)}` : ''}
+
+${data.experience.length > 0 ? `\\section{${t.headings.experience}}
+${data.experience.map(exp => `
+\\noindent \\textbf{${sanitize(exp.company)}} \\hfill ${sanitize(exp.startDate)} -- ${exp.current ? t.labels.present : sanitize(exp.endDate)} \\\\
+\\textit{${sanitize(exp.position)}} \\\\
+${sanitize(exp.description)}
+\\vspace{5pt}
+`).join('')}` : ''}
+
+${data.education.length > 0 ? `\\section{${t.headings.education}}
+${data.education.map(edu => `
+\\noindent \\textbf{${sanitize(edu.school)}} \\hfill ${sanitize(edu.startDate)} -- ${edu.current ? t.labels.present : sanitize(edu.endDate)} \\\\
+${sanitize(edu.degree)}
+\\vspace{5pt}
+`).join('')}` : ''}
+
+${data.skills.length > 0 ? `\\section{${t.headings.skills}}
+\\begin{center}
+${data.skills.map(s => sanitize(s.name)).join(' $\\bullet$ ')}
+\\end{center}` : ''}
+
+\\end{document}
+`;
+
+const latexSidebar = (data: ResumeData, t: Translation, isMinimal = false) => `
+\\documentclass[a4paper,10pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[margin=0.5in]{geometry}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\usepackage{xcolor}
+\\usepackage{multicol}
+\\usepackage{parskip}
+
+\\definecolor{sidebargray}{RGB}{248, 250, 252}
+\\definecolor{darktext}{RGB}{15, 23, 42}
+\\definecolor{primary}{RGB}{37, 99, 235}
+
+\\renewcommand{\\familydefault}{\\sfdefault}
+
+\\begin{document}
+
+${!isMinimal ? `
+% PROFESSIONAL TEMPLATE (Sidebar Left)
+\\noindent
+\\begin{minipage}[t]{0.32\\textwidth}
+    \\vspace{0pt} 
+    {\\Large \\textbf{${sanitize(data.personalInfo.fullName)}}} \\\\
+    \\textcolor{primary}{\\textbf{${sanitize(data.personalInfo.title)}}} \\\\
+    \\vspace{10pt}
+    
+    \\section*{${t.headings.contact}}
+    \\small
+    ${sanitize(data.personalInfo.email)} \\\\
+    ${sanitize(data.personalInfo.phone)} \\\\
+    ${sanitize(data.personalInfo.location)} \\\\
+    
+    \\vspace{10pt}
+    ${data.skills.length > 0 ? `
+    \\section*{${t.headings.skills}}
+    \\small
+    ${data.skills.map(s => sanitize(s.name)).join('\\\\ ')}
+    \\vspace{10pt}
+    ` : ''}
+    
+    ${data.education.length > 0 ? `
+    \\section*{${t.headings.education}}
+    \\small
+    ${data.education.map(edu => `
+        \\textbf{${sanitize(edu.school)}} \\\\
+        ${sanitize(edu.degree)} \\\\
+        \\color{gray} ${sanitize(edu.startDate)} - ${edu.current ? t.labels.present : sanitize(edu.endDate)} \\\\
+    `).join('\\vspace{4pt}')}
+    ` : ''}
+\\end{minipage}
+\\hfill
+\\vline % Vertical Line
+\\hfill
+\\begin{minipage}[t]{0.64\\textwidth}
+    \\vspace{0pt}
+    ${data.personalInfo.summary ? `\\section*{${t.labels.summary}} ${sanitize(data.personalInfo.summary)}` : ''}
+
+    ${data.experience.length > 0 ? `
+    \\section*{${t.headings.experience}}
+    ${data.experience.map(exp => `
+        \\textbf{${sanitize(exp.position)}} \\hfill ${sanitize(exp.startDate)} -- ${exp.current ? t.labels.present : sanitize(exp.endDate)} \\\\
+        \\textit{${sanitize(exp.company)}} \\\\
+        \\small ${sanitize(exp.description)} \\\\
+        \\vspace{5pt}
+    `).join('')}
+    ` : ''}
+    
+    ${data.projects.length > 0 ? `
+    \\section*{${t.headings.projects}}
+    ${data.projects.map(proj => `
+        \\textbf{${sanitize(proj.name)}} \\\\
+        \\small ${sanitize(proj.description)} \\\\
+        \\vspace{5pt}
+    `).join('')}
+    ` : ''}
+\\end{minipage}
+` : `
+% MINIMAL TEMPLATE (Clean Grid)
+\\noindent
+\\begin{minipage}[t]{0.30\\textwidth}
+    ${data.education.length > 0 ? `
+    \\textbf{${t.headings.education}} \\\\
+    ${data.education.map(edu => `
+        \\textbf{${sanitize(edu.school)}} \\\\
+        ${sanitize(edu.degree)} \\\\
+        \\small ${sanitize(edu.startDate)} \\\\
+        \\vspace{4pt}
+    `).join('')}
+    \\vspace{10pt}
+    ` : ''}
+    
+    ${data.skills.length > 0 ? `
+    \\textbf{${t.headings.skills}} \\\\
+    ${data.skills.map(s => sanitize(s.name)).join('\\\\ ')}
+    ` : ''}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[t]{0.65\\textwidth}
+    {\\Huge ${sanitize(data.personalInfo.fullName)}} \\\\
+    ${sanitize(data.personalInfo.title)} \\\\
+    \\vspace{10pt}
+    
+    ${data.personalInfo.summary ? `\\textbf{${t.labels.summary}} \\\\ ${sanitize(data.personalInfo.summary)} \\vspace{10pt}` : ''}
+    
+    ${data.experience.length > 0 ? `
+    \\textbf{${t.headings.experience}} \\\\
+    ${data.experience.map(exp => `
+        \\textbf{${sanitize(exp.position)}} | ${sanitize(exp.company)} \\\\
+        \\small ${sanitize(exp.description)} \\\\
+        \\vspace{5pt}
+    `).join('')}
+    ` : ''}
+\\end{minipage}
+`}
+\\end{document}
+`;
+
+const createStyledDoc = (children: any[], templateId: string) => {
+  const isSerif = ['classic', 'executive'].includes(templateId);
+  const mainFont = isSerif ? "Times New Roman" : "Arial";
+  const headerFont = isSerif ? "Times New Roman" : "Arial";
+
+  return new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: mainFont,
+            size: 22, // 11pt
+            color: "333333",
+          },
+        },
+        heading1: {
+          run: {
+            font: headerFont,
+            size: 28, // 14pt
+            bold: true,
+            color: "000000",
+            allCaps: true,
+          },
+          paragraph: {
+            spacing: { before: 240, after: 120 },
+          },
+        },
+        heading2: {
+          run: {
+            font: headerFont,
+            size: 24, // 12pt
+            bold: true,
+            color: "444444",
+          },
+          paragraph: {
+            spacing: { before: 120, after: 120 },
+          },
+        },
+        heading3: { // Used for sidebars
+          run: {
+            font: headerFont,
+            size: 20, // 10pt
+            bold: true,
+            color: "666666",
+            allCaps: true,
+          },
+          paragraph: {
+            spacing: { before: 100, after: 60 },
+          }
+        },
+        title: {
+          run: {
+            font: headerFont,
+            size: 48, // 24pt
+            bold: true,
+            color: "000000",
+          },
+          paragraph: {
+            spacing: { after: 120 },
+          },
+        },
+      },
+    },
+    sections: [{
+      properties: {},
+      children: children,
+    }],
+  });
+};
+
+const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
+  const centered = templateId === 'classic' || templateId === 'executive';
+  const alignment = centered ? AlignmentType.CENTER : AlignmentType.LEFT;
+
+  const nameColor = templateId === 'creative' ? "2563EB" : "000000";
+  const titleColor = "555555";
+  const sectionBorder = templateId !== 'minimal';
+
+  const children: any[] = [
+    new Paragraph({
+      alignment: alignment,
+      children: [
+        new TextRun({
+          text: data.personalInfo.fullName,
+          bold: true,
+          size: 48, // 24pt
+          color: nameColor
+        })
+      ],
+    }),
+    new Paragraph({
+      alignment: alignment,
+      children: [
+        new TextRun({
+          text: data.personalInfo.title,
+          size: 28,
+          color: titleColor
+        })
+      ],
+      spacing: { after: 200 }
+    }),
+    new Paragraph({
+      alignment: alignment,
+      children: [
+        new TextRun({ text: "✉ " + data.personalInfo.email + "   " }),
+        new TextRun({ text: "☎ " + data.personalInfo.phone + "   " }),
+        new TextRun({ text: "📍 " + data.personalInfo.location }),
+      ],
+      spacing: { after: 400 }
+    }),
+  ];
+
+  const addSection = (title: string, content: any[]) => {
+    children.push(
+      new Paragraph({
+        text: title,
+        heading: HeadingLevel.HEADING_1,
+        border: sectionBorder ? { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } } : undefined,
+      }),
+      ...content
+    );
+  };
+
+  if (data.personalInfo.summary) {
+    addSection(t.labels.summary.toUpperCase(), [
+      new Paragraph({ text: data.personalInfo.summary, spacing: { after: 300 } })
+    ]);
   }
 
-  const handleLatexExport = () => {
-    const latex = generateLatex(resume, t)
-    downloadFile(latex, "resume.tex", "text/x-tex")
+  if (data.experience.length > 0) {
+    addSection(t.headings.experience.toUpperCase(), data.experience.flatMap((exp) => [
+      new Paragraph({
+        children: [
+          new TextRun({ text: exp.position, bold: true, size: 24 }),
+          new TextRun({ text: ` | ${exp.company}`, size: 24, color: "444444" }),
+          new TextRun({
+            text: `\t${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`,
+            italics: true,
+            size: 20
+          }),
+        ],
+        tabStops: [{ type: "right", position: convertInchesToTwip(6.5) }]
+      }),
+      new Paragraph({ text: exp.description, spacing: { after: 200 } }),
+    ]));
   }
 
-  const handlePrimaryAction = () => {
-    if (currentStep === 7) {
-      handlePdfExport()
-    } else {
-      setStep(Math.min(7, currentStep + 1))
+  if (data.projects.length > 0) {
+    addSection(t.headings.projects.toUpperCase(), data.projects.flatMap((proj) => [
+      new Paragraph({
+        children: [
+          new TextRun({ text: proj.name, bold: true }),
+          ...(proj.link ? [new TextRun({ text: ` | ${proj.link}`, italics: true, color: "2563EB" })] : []),
+        ],
+      }),
+      new Paragraph({ text: proj.description, spacing: { after: 200 } }),
+    ]));
+  }
+
+  if (data.education.length > 0) {
+    addSection(t.headings.education.toUpperCase(), data.education.flatMap((edu) => [
+      new Paragraph({
+        children: [
+          new TextRun({ text: edu.school, bold: true }),
+          new TextRun({
+            text: `\t${edu.startDate} - ${edu.current ? t.labels.present : edu.endDate}`,
+            italics: true,
+          }),
+        ],
+        tabStops: [{ type: "right", position: convertInchesToTwip(6.5) }]
+      }),
+      new Paragraph({ text: edu.degree, spacing: { after: 200 } }),
+    ]));
+  }
+
+  if (data.skills.length > 0) {
+    addSection(t.headings.skills.toUpperCase(), [
+      new Paragraph({
+        text: data.skills.map((s) => s.name).join("  •  "),
+        alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT
+      })
+    ]);
+  }
+
+  return children;
+};
+
+const docxSidebar = (data: ResumeData, t: Translation) => {
+  const sidebarContent = [
+    new Paragraph({
+      text: t.headings.contact.toUpperCase(),
+      heading: HeadingLevel.HEADING_3
+    }),
+    new Paragraph({ children: [new TextRun({ text: "✉ ", size: 16 }), new TextRun(data.personalInfo.email)] }),
+    new Paragraph({ children: [new TextRun({ text: "☎ ", size: 16 }), new TextRun(data.personalInfo.phone)] }),
+    new Paragraph({ children: [new TextRun({ text: "📍 ", size: 16 }), new TextRun(data.personalInfo.location)] }),
+    new Paragraph({ text: "" }),
+  ];
+
+  if (data.skills.length > 0) {
+    sidebarContent.push(
+      new Paragraph({ text: t.headings.skills.toUpperCase(), heading: HeadingLevel.HEADING_3 }),
+      ...data.skills.map(s => new Paragraph({
+        text: s.name,
+        bullet: { level: 0 }
+      })),
+      new Paragraph({ text: "" })
+    );
+  }
+
+  if (data.education.length > 0) {
+    sidebarContent.push(
+      new Paragraph({ text: t.headings.education.toUpperCase(), heading: HeadingLevel.HEADING_3 }),
+      ...data.education.map(edu => new Paragraph({
+        children: [
+          new TextRun({ text: edu.school, bold: true }),
+          new TextRun({ text: `\n${edu.degree}` }),
+          new TextRun({ text: `\n${edu.startDate} - ${edu.endDate}`, italics: true, color: "555555", size: 18 }),
+        ],
+        spacing: { after: 120 }
+      }))
+    );
+  }
+
+  const mainContent = [
+    new Paragraph({
+      text: data.personalInfo.fullName,
+      heading: HeadingLevel.TITLE,
+      spacing: { after: 0 }
+    }),
+    new Paragraph({
+      children: [new TextRun({ text: data.personalInfo.title, color: "2563EB", size: 28, bold: true })],
+      spacing: { after: 200 }
+    }),
+    new Paragraph({
+      border: { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } },
+      spacing: { after: 200 }
+    })
+  ];
+
+  if (data.personalInfo.summary) {
+    mainContent.push(
+      new Paragraph({ text: t.labels.summary.toUpperCase(), heading: HeadingLevel.HEADING_2 }),
+      new Paragraph({ text: data.personalInfo.summary, spacing: { after: 200 } })
+    );
+  }
+
+  if (data.experience.length > 0) {
+    mainContent.push(
+      new Paragraph({ text: t.headings.experience.toUpperCase(), heading: HeadingLevel.HEADING_2 }),
+      ...data.experience.flatMap(exp => [
+        new Paragraph({
+          children: [
+            new TextRun({ text: exp.position, bold: true, size: 24 }),
+            new TextRun({ text: ` | ${exp.company}`, size: 24, color: "444444" }),
+          ]
+        }),
+        new Paragraph({
+          text: `${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`,
+          italics: true,
+          color: "666666",
+          spacing: { after: 100 }
+        }),
+        new Paragraph({ text: exp.description, spacing: { after: 240 } })
+      ])
+    );
+  }
+
+  if (data.projects.length > 0) {
+    mainContent.push(
+      new Paragraph({ text: t.headings.projects.toUpperCase(), heading: HeadingLevel.HEADING_2 }),
+      ...data.projects.flatMap(proj => [
+        new Paragraph({
+          children: [
+            new TextRun({ text: proj.name, bold: true }),
+            ...(proj.link ? [new TextRun({ text: ` | ${proj.link}`, color: "2563EB" })] : []),
+          ],
+        }),
+        new Paragraph({ text: proj.description, spacing: { after: 200 } })
+      ])
+    );
+  }
+
+  const table = new Table({
+    columnWidths: [3200, 6400],
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 33, type: WidthType.PERCENTAGE },
+            children: sidebarContent,
+            shading: { fill: "F8FAFC", type: ShadingType.CLEAR, color: "auto" },
+            margins: { top: 200, bottom: 200, left: 150, right: 150 },
+            verticalAlign: "top"
+          }),
+          new TableCell({
+            width: { size: 67, type: WidthType.PERCENTAGE },
+            children: mainContent,
+            margins: { top: 200, bottom: 200, left: 400, right: 100 },
+            verticalAlign: "top"
+          }),
+        ],
+      }),
+    ],
+    borders: {
+      top: { style: BorderStyle.NONE },
+      bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE },
+      right: { style: BorderStyle.NONE },
+      insideVertical: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE },
+    },
+  });
+
+  return [table];
+};
+
+export const generateLatex = (data: ResumeData, t: Translation): string => {
+  switch (data.templateId) {
+    case 'classic': return latexClassic(data, t);
+    case 'professional': return latexSidebar(data, t, false);
+    case 'minimal': return latexSidebar(data, t, true);
+    case 'executive': return latexClassic(data, t);
+    case 'creative': return latexModern(data, t);
+    case 'modern':
+    default: return latexModern(data, t);
+  }
+};
+
+export const generateDocx = async (data: ResumeData, t: Translation): Promise<Blob> => {
+  let children;
+
+  switch (data.templateId) {
+    case 'professional':
+    case 'minimal':
+      children = docxSidebar(data, t);
+      break;
+    default:
+      children = docxStandard(data, t, data.templateId);
+  }
+
+  const doc = createStyledDoc(children, data.templateId);
+  return await Packer.toBlob(doc);
+};
+
+export const downloadFile = (content: string | Blob, filename: string, type: string) => {
+  const url = content instanceof Blob ? URL.createObjectURL(content) : URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+declare global {
+  interface Window {
+    pdfjsLib: any;
+    mammoth: any;
+  }
+}
+
+export const extractTextFromPdf = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map((item: any) => item.str).join(' ');
+    fullText += pageText + ' ';
+  }
+
+  return fullText;
+};
+
+export const extractTextFromDocx = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+};
+
+export const analyzeResume = (text: string, fileName: string): AtsResult => {
+  const lowerText = text.toLowerCase();
+
+  const sections = {
+    experience: /experience|employment|history|work/i.test(lowerText),
+    education: /education|university|college|degree/i.test(lowerText),
+    skills: /skills|competencies|technologies|proficiencies/i.test(lowerText),
+    projects: /projects|portfolio/i.test(lowerText),
+    summary: /summary|objective|about/i.test(lowerText)
+  };
+
+  const foundSections = Object.entries(sections).filter(([, found]) => found).map(([key]) => key);
+  const missingSections = Object.entries(sections).filter(([, found]) => !found).map(([key]) => key);
+
+  const hasEmail = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/.test(text);
+  const hasPhone = /(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/.test(text) || /\d{10}/.test(text);
+  const hasLinkedIn = /linkedin\.com\/in\//i.test(text);
+
+  const actionVerbs = [
+    'led', 'managed', 'developed', 'created', 'implemented', 'designed', 'improved',
+    'increased', 'reduced', 'saved', 'achieved', 'launched', 'mentored', 'analyzed'
+  ];
+  const foundKeywords = actionVerbs.filter(verb => lowerText.includes(verb));
+  const keywordDensity = foundKeywords.length;
+
+  let score = 0;
+  const breakdown = {
+    sections: 0,
+    keywords: 0,
+    formatting: 0,
+    skills: 0,
+    clarity: 0
+  };
+
+  breakdown.sections = (foundSections.length / 5) * 20;
+  score += breakdown.sections;
+
+  breakdown.keywords = Math.min((keywordDensity / 10) * 30, 30);
+  score += breakdown.keywords;
+
+  const isPdf = fileName.toLowerCase().endsWith('.pdf');
+  const isDocx = fileName.toLowerCase().endsWith('.docx');
+  let formattingScore = 15;
+  if (!text || text.length < 100) formattingScore = 0;
+  breakdown.formatting = formattingScore;
+  score += breakdown.formatting;
+
+  if (sections.skills) {
+    breakdown.skills = 15;
+  } else {
+    breakdown.skills = 5;
+  }
+  score += breakdown.skills;
+
+  let clarityScore = 0;
+  if (hasEmail) clarityScore += 10;
+  if (hasPhone) clarityScore += 5;
+  if (hasLinkedIn) clarityScore += 5;
+  breakdown.clarity = clarityScore;
+  score += breakdown.clarity;
+
+  const strengths = [];
+  const improvements = [];
+
+  if (hasEmail) strengths.push('Contact information (Email) detected.');
+  else improvements.push('Missing email address.');
+
+  if (sections.experience) strengths.push('Work Experience section detected.');
+  else improvements.push('Add a clear "Work Experience" section.');
+
+  if (sections.education) strengths.push('Education section detected.');
+  else improvements.push('Add a clear "Education" section.');
+
+  if (sections.skills) strengths.push('Skills section detected.');
+  else improvements.push('Add a dedicated "Skills" section.');
+
+  if (keywordDensity > 5) strengths.push('Good use of action verbs.');
+  else improvements.push('Use more action verbs (e.g., Led, Developed, Analyzed).');
+
+  if (text.length < 500) improvements.push('Resume content seems too short. Aim for at least 300-500 words.');
+
+  return {
+    score: Math.round(score),
+    breakdown,
+    strengths,
+    improvements,
+    details: {
+      wordCount: text.split(/\s+/).length,
+      foundSections,
+      missingSections,
+      contactInfoFound: hasEmail || hasPhone,
+      fileType: isPdf ? 'PDF' : (isDocx ? 'DOCX' : 'Unknown')
     }
-  }
-
-  return (
-    <>
-      {/* ================= MOBILE VIEW (< 1024px) ================= */}
-      <div className="lg:hidden min-h-screen bg-gray-50 flex flex-col">
-        {/* MOBILE STEPPER */}
-        <div className="bg-white border-b px-4 pt-4 pb-3">
-          <div
-            ref={stepperRef}
-            className="flex items-center gap-6 overflow-x-auto no-scrollbar"
-          >
-            {steps.map((step, index) => {
-              const active = currentStep === step.id
-              const done = currentStep > step.id
-
-              return (
-                <div key={step.id} className="flex flex-col items-center min-w-[64px]">
-                  <div
-                    data-active={active}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${active
-                      ? "bg-blue-600 text-white"
-                      : done
-                        ? "bg-slate-800 text-white"
-                        : "bg-gray-300 text-white"
-                      }`}
-                  >
-                    {done ? <CheckCircle2 size={14} /> : index + 1}
-                  </div>
-                  <span
-                    className={`mt-2 text-[11px] font-semibold text-center ${active ? "text-blue-600" : "text-gray-500"
-                      }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* MOBILE CONTENT */}
-        <main className="flex-1 px-4 py-6 space-y-6 overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {steps[currentStep]?.label}
-            </h1>
-          </div>
-
-          {currentStep < 7 ? (
-            <div className="space-y-6">
-              <Editor t={t} />
-              {SHOW_ADS && (
-                <AdSpace className="h-20" label="Ad Space (Mobile)" />
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                {templates.map((tmpl) => (
-                  <button
-                    key={tmpl.id}
-                    onClick={() => setTemplateId(tmpl.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold ${resume.templateId === tmpl.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700"
-                      }`}
-                  >
-                    {tmpl.name}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <button
-                  onClick={handlePdfExport}
-                  className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
-                >
-                  <Printer size={16} /> Download PDF
-                </button>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={handleDocxExport}
-                    className="py-2 rounded-lg border font-semibold flex items-center justify-center gap-2"
-                  >
-                    <FileText size={14} /> Word
-                  </button>
-                  <button
-                    onClick={handleLatexExport}
-                    className="py-2 rounded-lg border font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Code size={14} /> LaTeX
-                  </button>
-                </div>
-              </div>
-
-              {/* MOBILE PREVIEW CONTAINER */}
-              <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[65vh] overflow-hidden relative">
-                <Preview t={t} />
-              </div>
-            </>
-          )}
-        </main>
-
-        {/* MOBILE BOTTOM NAV */}
-        <div className="sticky bottom-0 bg-white border-t px-4 py-3 flex gap-3 z-20">
-          <button
-            disabled={currentStep === 0}
-            onClick={() => setStep(Math.max(0, currentStep - 1))}
-            className="flex-1 py-3 rounded-lg bg-gray-800 text-white font-semibold disabled:opacity-40"
-          >
-            Back
-          </button>
-          <button
-            onClick={handlePrimaryAction}
-            className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold flex items-center justify-center gap-2"
-          >
-            {currentStep === 7 ? (
-              <>
-                <Printer size={18} /> Download PDF
-              </>
-            ) : (
-              "Next Step"
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* ================= DESKTOP VIEW (>= 1024px) ================= */}
-      <div className="hidden lg:flex min-h-screen bg-gray-50">
-        {/* TOP HEADER */}
-        <div className="fixed top-0 left-0 right-0 h-16 bg-white border-b z-50 flex items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-lg">H</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">HiResume</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <Menu size={20} className="text-gray-600" />
-            </button>
-            <button className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center">
-              <User size={18} className="text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* MAIN CONTENT WRAPPER */}
-        <div className="flex w-full mt-16 h-[calc(100vh-64px)] overflow-hidden">
-          {/* LEFT SIDEBAR - NAVIGATION */}
-          <div className="w-64 bg-white border-r flex flex-col h-full overflow-y-auto">
-            {/* Steps Navigation */}
-            <div className="py-6">
-              {steps.map((step, index) => {
-                const active = currentStep === step.id
-
-                return (
-                  <button
-                    key={step.id}
-                    onClick={() => setStep(step.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${active
-                      ? "bg-blue-50 border-r-2 border-blue-600 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                  >
-                    <div className={`flex items-center justify-center flex-shrink-0 ${active ? "text-blue-600" : "text-gray-400"}`}>
-                      <span className="text-sm font-bold">{index + 1}</span>
-                    </div>
-                    <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
-                      {step.label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="mt-auto px-4 pb-6 space-y-2">
-              <button
-                disabled={currentStep === 0}
-                onClick={() => setStep(Math.max(0, currentStep - 1))}
-                className="w-full py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <ChevronLeft size={16} /> Previous
-              </button>
-              <button
-                onClick={handlePrimaryAction}
-                className="w-full py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-              >
-                {currentStep === 7 ? (
-                  <>
-                    <Printer size={16} /> Download PDF
-                  </>
-                ) : (
-                  <>
-                    Next <ChevronRight size={16} />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* MIDDLE - EDITOR */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 h-full relative">
-            <div className="max-w-3xl mx-auto p-8 pb-32">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                  {steps[currentStep]?.label}
-                </h1>
-              </div>
-
-              {currentStep < 7 ? (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <Editor t={t} />
-                  </div>
-                  {SHOW_ADS && (
-                    <AdSpace className="h-24" label="Ad Space" />
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Template Selector */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                      Template
-                    </h3>
-                    <div className="flex gap-3">
-                      {templates.map((tmpl) => (
-                        <button
-                          key={tmpl.id}
-                          onClick={() => setTemplateId(tmpl.id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${resume.templateId === tmpl.id
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                        >
-                          {tmpl.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* DESKTOP PREVIEW STEP CONTAINER */}
-                  <div className="bg-gray-200/50 rounded-xl border border-gray-300 p-4 min-h-[600px]">
-                    <div className="w-full flex justify-center">
-                      <Preview t={t} />
-                    </div>
-                  </div>
-
-                  {/* Download */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                      Download Resume
-                    </h3>
-                    <div className="space-y-3">
-                      <button
-                        onClick={handlePdfExport}
-                        className="w-full py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Printer size={18} /> Download PDF
-                      </button>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={handleDocxExport}
-                          className="py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <FileText size={16} /> Word
-                        </button>
-                        <button
-                          onClick={handleLatexExport}
-                          className="py-2.5 rounded-lg border border-gray-300 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Code size={16} /> LaTeX
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </>
-  )
-}
+  };
+};
