@@ -7,17 +7,19 @@ import { v4 as uuidv4 } from 'uuid';
 interface ResumeStore {
   resume: ResumeData;
   currentStep: number;
+  contentScale: number;
+  setContentScale: (scale: number) => void;
   setTemplateId: (id: TemplateId) => void;
   setPersonal: (data: Partial<ResumeData['personalInfo']>) => void;
-  
+
   addExperience: () => void;
   updateExperience: (id: string, data: Partial<Experience>) => void;
   removeExperience: (id: string) => void;
-  
+
   addProject: () => void;
   updateProject: (id: string, data: Partial<Project>) => void;
   removeProject: (id: string) => void;
-  
+
   addEducation: () => void;
   updateEducation: (id: string, data: Partial<Education>) => void;
   removeEducation: (id: string) => void;
@@ -25,7 +27,7 @@ interface ResumeStore {
   addCertification: () => void;
   updateCertification: (id: string, data: Partial<Certification>) => void;
   removeCertification: (id: string) => void;
-  
+
   addSkill: () => void;
   updateSkill: (id: string, data: Partial<Skill>) => void;
   removeSkill: (id: string) => void;
@@ -35,7 +37,7 @@ interface ResumeStore {
   addCustomItem: () => void;
   updateCustomItem: (id: string, data: Partial<CustomItem>) => void;
   removeCustomItem: (id: string) => void;
-  
+
   setStep: (step: number) => void;
   resetResume: () => void;
 }
@@ -45,6 +47,8 @@ export const useResumeStore = create<ResumeStore>()(
     (set) => ({
       resume: INITIAL_RESUME_STATE,
       currentStep: 0,
+      contentScale: 1,
+      setContentScale: (scale) => set({ contentScale: scale }),
       setTemplateId: (id) =>
         set((state) => ({ resume: { ...state.resume, templateId: id } })),
       setPersonal: (data) =>
@@ -85,7 +89,7 @@ export const useResumeStore = create<ResumeStore>()(
             experience: state.resume.experience.filter((exp) => exp.id !== id),
           },
         })),
-      
+
       // Projects
       addProject: () =>
         set((state) => ({
