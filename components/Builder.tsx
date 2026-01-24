@@ -94,10 +94,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                   <div
                     data-active={active}
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${active
-                        ? "bg-blue-600 text-white"
-                        : done
-                          ? "bg-slate-800 text-white"
-                          : "bg-gray-300 text-white"
+                      ? "bg-blue-600 text-white"
+                      : done
+                        ? "bg-slate-800 text-white"
+                        : "bg-gray-300 text-white"
                       }`}
                   >
                     {done ? <CheckCircle2 size={14} /> : index + 1}
@@ -137,8 +137,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                     key={tmpl.id}
                     onClick={() => setTemplateId(tmpl.id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold ${resume.templateId === tmpl.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700"
                       }`}
                   >
                     {tmpl.name}
@@ -234,8 +234,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                     key={step.id}
                     onClick={() => setStep(step.id)}
                     className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${active
-                        ? "bg-blue-50 border-r-2 border-blue-600 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-50"
+                      ? "bg-blue-50 border-r-2 border-blue-600 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-50"
                       }`}
                   >
                     <div className={`flex items-center justify-center flex-shrink-0 ${active ? "text-blue-600" : "text-gray-400"}`}>
@@ -306,8 +306,8 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                           key={tmpl.id}
                           onClick={() => setTemplateId(tmpl.id)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${resume.templateId === tmpl.id
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                         >
                           {tmpl.name}
@@ -354,33 +354,9 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             </div>
           </div>
 
-          {/* RIGHT - LIVE PREVIEW SIDEBAR */}
-          <div className="w-[450px] bg-slate-800 border-l border-slate-700 h-full flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between shrink-0">
-              <h2 className="text-sm font-semibold text-white">Live Preview</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handlePdfExport}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
-                >
-                  <Download size={14} /> PDF
-                </button>
-              </div>
-            </div>
-
-            {/* 
-               Preview Container for Sidebar 
-               The Preview component inside here will automatically scale itself 
-               to fit this 450px width using the ResizeObserver logic.
-            */}
-            <div className="flex-1 overflow-hidden bg-slate-900 relative">
-              <div className="absolute inset-0 p-6">
-                <Preview t={t} />
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+    </div >
     </>
   )
 }
