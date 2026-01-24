@@ -15,7 +15,7 @@ import {
   convertInchesToTwip
 } from "docx";
 
-export const printResume = () => {
+export const printResume = (contentScale: number = 1) => {
   const content = document.getElementById('resume-preview-content');
   if (!content) {
     console.error("Resume content not found");
@@ -60,8 +60,14 @@ export const printResume = () => {
         height: 297mm !important;
         box-shadow: none !important;
         margin: 0 !important;
-        /* Ensure no transforms scale it down */
+        /* Ensure the outer container doesn't have transform */
         transform: none !important; 
+      }
+      /* Apply contentScale to the inner wrapper */
+      #resume-preview-content > div {
+        transform: scale(${contentScale}) !important;
+        transform-origin: top left !important;
+        width: calc(100% / ${contentScale}) !important;
       }
     </style>
   `);
