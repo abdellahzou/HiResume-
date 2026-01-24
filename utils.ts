@@ -62,11 +62,11 @@ export const printResume = (contentScale: number = 1) => {
         margin: 0 !important;
         transform: none !important; 
       }
-      /* Apply contentScale to the inner wrapper with extra 10% shrinking for safety */
+      /* Apply contentScale to the inner wrapper */
       #resume-preview-content > div {
-        transform: scale(calc(${contentScale} * 0.9)) !important;
+        transform: scale(${contentScale}) !important;
         transform-origin: top left !important;
-        width: calc(100% / (${contentScale} * 0.9)) !important;
+        width: calc(100% / ${contentScale}) !important;
         height: auto !important;
       }
       #resume-preview-content > div > div {
