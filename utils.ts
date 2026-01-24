@@ -47,27 +47,31 @@ export const printResume = (contentScale: number = 1) => {
       @page { size: A4; margin: 0; }
       html, body { 
         width: 210mm;
+        height: 297mm;
         margin: 0; 
         padding: 0; 
+        overflow: hidden; /* Strict Page 1 enforcement */
         -webkit-print-color-adjust: exact; 
         print-color-adjust: exact;
         background-color: white;
       }
       #resume-preview-content {
         width: 210mm !important;
-        height: auto !important;
-        min-height: 297mm !important;
-        overflow: visible !important;
+        height: 297mm !important;
         box-shadow: none !important;
         margin: 0 !important;
         transform: none !important; 
       }
-      /* Force 1:1 scale for print, ignoring screen scaling */
+      /* Apply contentScale to the inner wrapper */
       #resume-preview-content > div {
-        transform: scale(1) !important;
+        transform: scale(${contentScale}) !important;
         transform-origin: top left !important;
-        width: 100% !important;
+        width: calc(100% / ${contentScale}) !important;
         height: auto !important;
+      }
+      #resume-preview-content > div > div {
+        height: 100% !important;
+        min-height: 0 !important;
         overflow: visible !important;
       }
     </style>
