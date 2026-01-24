@@ -56,6 +56,7 @@ export const printResume = (contentScale: number = 1) => {
       #resume-preview-content {
         width: 210mm !important;
         height: auto !important;
+        min-height: 297mm !important;
         overflow: visible !important;
         box-shadow: none !important;
         margin: 0 !important;
@@ -68,6 +69,13 @@ export const printResume = (contentScale: number = 1) => {
         transform-origin: top left !important;
         width: calc(100% / ${contentScale}) !important;
         height: auto !important;
+        overflow: visible !important;
+      }
+      /* Force template root to auto height and visible overflow */
+      #resume-preview-content > div > div {
+        height: auto !important;
+        min-height: 100% !important;
+        overflow: visible !important;
       }
     </style>
   `);
