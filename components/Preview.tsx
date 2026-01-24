@@ -956,7 +956,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
     <div
       id="preview-wrapper"
       ref={containerRef}
-      className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-hidden", className)}
+      className={clsx("w-full h-full flex justify-center bg-gray-100/50 overflow-auto", className)}
     >
       {/* 
         DISPLAY WRAPPER: Scales A4 to fit screen.
