@@ -460,7 +460,7 @@ const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
       new Paragraph({
         text: title,
         heading: HeadingLevel.HEADING_1,
-        border: sectionBorder ? { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } } : undefined,
+        border: sectionBorder ? { bottom: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 6 } } : undefined,
       }),
       ...content
     );
@@ -578,7 +578,7 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
       spacing: { after: 200 }
     }),
     new Paragraph({
-      border: { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } },
+      border: { bottom: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 6 } },
       spacing: { after: 200 }
     })
   ];
@@ -601,9 +601,13 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
           ]
         }),
         new Paragraph({
-          text: `${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`,
-          italics: true,
-          color: "666666",
+          children: [
+            new TextRun({
+              text: `${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`,
+              italics: true,
+              color: "666666"
+            })
+          ],
           spacing: { after: 100 }
         }),
         new Paragraph({ text: exp.description, spacing: { after: 240 } })
