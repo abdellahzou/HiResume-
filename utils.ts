@@ -64,9 +64,9 @@ export const printResume = (contentScale: number = 1) => {
       }
       /* Apply contentScale to the inner wrapper */
       #resume-preview-content > div {
-        transform: scale(${contentScale}) !important;
+        transform: scale(${contentScale}* 0.85) !important;
         transform-origin: top left !important;
-        width: calc(100% / ${contentScale}) !important;
+        width: calc(100% / ${contentScale}* 0.85) !important;
         height: auto !important;
       }
       #resume-preview-content > div > div {
