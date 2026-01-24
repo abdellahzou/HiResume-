@@ -317,7 +317,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                   </div>
 
                   {/* DESKTOP PREVIEW STEP CONTAINER */}
-                  <div className="bg-gray-200/50 rounded-xl border border-gray-300 overflow-hidden h-[800px] relative">
+                  <div className="bg-gray-200/50 rounded-xl border border-gray-300 overflow-y-auto h-[900px] relative">
                     <Preview t={t} />
                   </div>
 
