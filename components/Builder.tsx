@@ -24,7 +24,7 @@ interface BuilderProps {
 }
 
 export const Builder: React.FC<BuilderProps> = ({ t }) => {
-  const { currentStep, setStep, resume, setTemplateId } = useResumeStore()
+  const { currentStep, setStep, resume, setTemplateId, contentScale } = useResumeStore()
   const stepperRef = useRef<HTMLDivElement>(null)
 
   const steps = [
@@ -51,7 +51,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
   }, [currentStep])
 
   // UPDATED: Use printResume utility instead of window.print()
-  const handlePdfExport = () => printResume()
+  const handlePdfExport = () => printResume(contentScale)
 
   const handleDocxExport = async () => {
     const blob = await generateDocx(resume, t)
@@ -93,20 +93,18 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 <div key={step.id} className="flex flex-col items-center min-w-[64px]">
                   <div
                     data-active={active}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                      active
+                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${active
                         ? "bg-blue-600 text-white"
                         : done
-                        ? "bg-slate-800 text-white"
-                        : "bg-gray-300 text-white"
-                    }`}
+                          ? "bg-slate-800 text-white"
+                          : "bg-gray-300 text-white"
+                      }`}
                   >
                     {done ? <CheckCircle2 size={14} /> : index + 1}
                   </div>
                   <span
-                    className={`mt-2 text-[11px] font-semibold text-center ${
-                      active ? "text-blue-600" : "text-gray-500"
-                    }`}
+                    className={`mt-2 text-[11px] font-semibold text-center ${active ? "text-blue-600" : "text-gray-500"
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -138,11 +136,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                   <button
                     key={tmpl.id}
                     onClick={() => setTemplateId(tmpl.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                      resume.templateId === tmpl.id
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold ${resume.templateId === tmpl.id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-700"
-                    }`}
+                      }`}
                   >
                     {tmpl.name}
                   </button>
@@ -170,10 +167,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                   </button>
                 </div>
               </div>
-              
+
               {/* MOBILE PREVIEW CONTAINER */}
               <div className="bg-white rounded-xl shadow ring-1 ring-gray-200 h-[65vh] overflow-hidden relative">
-                 <Preview t={t} />
+                <Preview t={t} />
               </div>
             </>
           )}
@@ -231,19 +228,18 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
             <div className="py-6">
               {steps.map((step, index) => {
                 const active = currentStep === step.id
-                
+
                 return (
                   <button
                     key={step.id}
                     onClick={() => setStep(step.id)}
-                    className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${
-                      active
+                    className={`w-full flex items-center gap-3 px-6 py-3 transition-colors ${active
                         ? "bg-blue-50 border-r-2 border-blue-600 text-blue-700"
                         : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     <div className={`flex items-center justify-center flex-shrink-0 ${active ? "text-blue-600" : "text-gray-400"}`}>
-                       <span className="text-sm font-bold">{index + 1}</span>
+                      <span className="text-sm font-bold">{index + 1}</span>
                     </div>
                     <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
                       {step.label}
@@ -309,11 +305,10 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                         <button
                           key={tmpl.id}
                           onClick={() => setTemplateId(tmpl.id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            resume.templateId === tmpl.id
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${resume.templateId === tmpl.id
                               ? "bg-blue-600 text-white"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
+                            }`}
                         >
                           {tmpl.name}
                         </button>
@@ -323,7 +318,7 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
 
                   {/* DESKTOP PREVIEW STEP CONTAINER */}
                   <div className="bg-gray-200/50 rounded-xl border border-gray-300 overflow-hidden h-[800px] relative">
-                     <Preview t={t} />
+                    <Preview t={t} />
                   </div>
 
                   {/* Download */}
@@ -372,16 +367,16 @@ export const Builder: React.FC<BuilderProps> = ({ t }) => {
                 </button>
               </div>
             </div>
-            
+
             {/* 
                Preview Container for Sidebar 
                The Preview component inside here will automatically scale itself 
                to fit this 450px width using the ResizeObserver logic.
             */}
             <div className="flex-1 overflow-hidden bg-slate-900 relative">
-               <div className="absolute inset-0 p-6">
-                  <Preview t={t} />
-               </div>
+              <div className="absolute inset-0 p-6">
+                <Preview t={t} />
+              </div>
             </div>
           </div>
         </div>
