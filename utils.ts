@@ -15,7 +15,7 @@ import {
   convertInchesToTwip
 } from "docx";
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
+import html2pdf from 'html2pdf.js/dist/html2pdf.bundle.min.js';
 
 export const printResume = (contentScale: number = 1) => {
   const content = document.getElementById('resume-preview-content');
