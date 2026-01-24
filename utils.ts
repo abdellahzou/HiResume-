@@ -1,21 +1,21 @@
 import { ResumeData, Translation, AtsResult } from './types';
-import {
-  Packer,
-  Document,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
+import { 
+  Packer, 
+  Document, 
+  Paragraph, 
+  TextRun, 
+  HeadingLevel, 
+  AlignmentType, 
+  Table, 
+  TableRow, 
+  TableCell, 
+  WidthType, 
   BorderStyle,
   ShadingType,
   convertInchesToTwip
 } from "docx";
 
-export const printResume = (contentScale: number = 1) => {
+export const printResume = () => {
   const content = document.getElementById('resume-preview-content');
   if (!content) {
     console.error("Resume content not found");
@@ -36,7 +36,7 @@ export const printResume = (contentScale: number = 1) => {
 
   doc.open();
   doc.write('<!DOCTYPE html><html><head><title>Resume</title>');
-
+  
   const styles = document.querySelectorAll('link[rel="stylesheet"], style');
   styles.forEach((styleNode) => {
     doc.write(styleNode.outerHTML);
@@ -60,25 +60,14 @@ export const printResume = (contentScale: number = 1) => {
         height: 297mm !important;
         box-shadow: none !important;
         margin: 0 !important;
+        /* Ensure no transforms scale it down */
         transform: none !important; 
-      }
-      /* Apply contentScale to the inner wrapper with extra 10% shrinking for safety */
-      #resume-preview-content > div {
-        transform: scale(calc(${contentScale} * 0.85)) !important;
-        transform-origin: top left !important;
-        width: calc(100% / (${contentScale} * 0.85)) !important;
-        height: auto !important;
-      }
-      #resume-preview-content > div > div {
-        height: 100% !important;
-        min-height: 0 !important;
-        overflow: visible !important;
       }
     </style>
   `);
-
+  
   doc.write('</head><body>');
-
+  
   doc.write(content.outerHTML);
   doc.write('</body></html>');
   doc.close();
@@ -87,7 +76,7 @@ export const printResume = (contentScale: number = 1) => {
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
-
+      
       setTimeout(() => {
         document.body.removeChild(iframe);
       }, 1000);
@@ -387,16 +376,16 @@ const createStyledDoc = (children: any[], templateId: string) => {
           },
         },
         heading3: { // Used for sidebars
-          run: {
-            font: headerFont,
-            size: 20, // 10pt
-            bold: true,
-            color: "666666",
-            allCaps: true,
-          },
-          paragraph: {
-            spacing: { before: 100, after: 60 },
-          }
+            run: {
+              font: headerFont,
+              size: 20, // 10pt
+              bold: true,
+              color: "666666",
+              allCaps: true,
+            },
+            paragraph: {
+                spacing: { before: 100, after: 60 },
+            }
         },
         title: {
           run: {
@@ -421,30 +410,30 @@ const createStyledDoc = (children: any[], templateId: string) => {
 const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
   const centered = templateId === 'classic' || templateId === 'executive';
   const alignment = centered ? AlignmentType.CENTER : AlignmentType.LEFT;
-
-  const nameColor = templateId === 'creative' ? "2563EB" : "000000";
+  
+  const nameColor = templateId === 'creative' ? "2563EB" : "000000"; 
   const titleColor = "555555";
-  const sectionBorder = templateId !== 'minimal';
+  const sectionBorder = templateId !== 'minimal'; 
 
   const children: any[] = [
     new Paragraph({
       alignment: alignment,
       children: [
-        new TextRun({
-          text: data.personalInfo.fullName,
-          bold: true,
+        new TextRun({ 
+          text: data.personalInfo.fullName, 
+          bold: true, 
           size: 48, // 24pt
-          color: nameColor
+          color: nameColor 
         })
       ],
     }),
     new Paragraph({
       alignment: alignment,
       children: [
-        new TextRun({
-          text: data.personalInfo.title,
-          size: 28,
-          color: titleColor
+        new TextRun({ 
+          text: data.personalInfo.title, 
+          size: 28, 
+          color: titleColor 
         })
       ],
       spacing: { after: 200 }
@@ -537,22 +526,22 @@ const docxStandard = (data: ResumeData, t: Translation, templateId: string) => {
 
 const docxSidebar = (data: ResumeData, t: Translation) => {
   const sidebarContent = [
-    new Paragraph({
-      text: t.headings.contact.toUpperCase(),
-      heading: HeadingLevel.HEADING_3
+    new Paragraph({ 
+      text: t.headings.contact.toUpperCase(), 
+      heading: HeadingLevel.HEADING_3 
     }),
-    new Paragraph({ children: [new TextRun({ text: "✉ ", size: 16 }), new TextRun(data.personalInfo.email)] }),
-    new Paragraph({ children: [new TextRun({ text: "☎ ", size: 16 }), new TextRun(data.personalInfo.phone)] }),
-    new Paragraph({ children: [new TextRun({ text: "📍 ", size: 16 }), new TextRun(data.personalInfo.location)] }),
+    new Paragraph({ children: [new TextRun({text: "✉ ", size: 16}), new TextRun(data.personalInfo.email)] }),
+    new Paragraph({ children: [new TextRun({text: "☎ ", size: 16}), new TextRun(data.personalInfo.phone)] }),
+    new Paragraph({ children: [new TextRun({text: "📍 ", size: 16}), new TextRun(data.personalInfo.location)] }),
     new Paragraph({ text: "" }),
   ];
 
   if (data.skills.length > 0) {
     sidebarContent.push(
       new Paragraph({ text: t.headings.skills.toUpperCase(), heading: HeadingLevel.HEADING_3 }),
-      ...data.skills.map(s => new Paragraph({
-        text: s.name,
-        bullet: { level: 0 }
+      ...data.skills.map(s => new Paragraph({ 
+        text: s.name, 
+        bullet: { level: 0 } 
       })),
       new Paragraph({ text: "" })
     );
@@ -573,18 +562,18 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
   }
 
   const mainContent = [
-    new Paragraph({
-      text: data.personalInfo.fullName,
+    new Paragraph({ 
+      text: data.personalInfo.fullName, 
       heading: HeadingLevel.TITLE,
       spacing: { after: 0 }
     }),
-    new Paragraph({
-      children: [new TextRun({ text: data.personalInfo.title, color: "2563EB", size: 28, bold: true })],
+    new Paragraph({ 
+      children: [new TextRun({ text: data.personalInfo.title, color: "2563EB", size: 28, bold: true })], 
       spacing: { after: 200 }
     }),
-    new Paragraph({
-      border: { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } },
-      spacing: { after: 200 }
+    new Paragraph({ 
+        border: { bottom: { color: "CCCCCC", space: 1, value: "single", size: 6 } },
+        spacing: { after: 200 }
     })
   ];
 
@@ -606,10 +595,10 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
           ]
         }),
         new Paragraph({
-          text: `${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`,
-          italics: true,
-          color: "666666",
-          spacing: { after: 100 }
+             text: `${exp.startDate} - ${exp.current ? t.labels.present : exp.endDate}`, 
+             italics: true, 
+             color: "666666",
+             spacing: { after: 100 }
         }),
         new Paragraph({ text: exp.description, spacing: { after: 240 } })
       ])
@@ -632,37 +621,37 @@ const docxSidebar = (data: ResumeData, t: Translation) => {
   }
 
   const table = new Table({
-    columnWidths: [3200, 6400],
-    rows: [
-      new TableRow({
-        children: [
-          new TableCell({
-            width: { size: 33, type: WidthType.PERCENTAGE },
-            children: sidebarContent,
-            shading: { fill: "F8FAFC", type: ShadingType.CLEAR, color: "auto" },
-            margins: { top: 200, bottom: 200, left: 150, right: 150 },
-            verticalAlign: "top"
-          }),
-          new TableCell({
-            width: { size: 67, type: WidthType.PERCENTAGE },
-            children: mainContent,
-            margins: { top: 200, bottom: 200, left: 400, right: 100 },
-            verticalAlign: "top"
-          }),
-        ],
-      }),
-    ],
-    borders: {
-      top: { style: BorderStyle.NONE },
-      bottom: { style: BorderStyle.NONE },
-      left: { style: BorderStyle.NONE },
-      right: { style: BorderStyle.NONE },
-      insideVertical: { style: BorderStyle.NONE },
-      insideHorizontal: { style: BorderStyle.NONE },
-    },
-  });
+      columnWidths: [3200, 6400], 
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 33, type: WidthType.PERCENTAGE },
+              children: sidebarContent,
+              shading: { fill: "F8FAFC", type: ShadingType.CLEAR, color: "auto" }, 
+              margins: { top: 200, bottom: 200, left: 150, right: 150 },
+              verticalAlign: "top"
+            }),
+            new TableCell({
+              width: { size: 67, type: WidthType.PERCENTAGE },
+              children: mainContent,
+              margins: { top: 200, bottom: 200, left: 400, right: 100 },
+              verticalAlign: "top"
+            }),
+          ],
+        }),
+      ],
+      borders: {
+        top: { style: BorderStyle.NONE },
+        bottom: { style: BorderStyle.NONE },
+        left: { style: BorderStyle.NONE },
+        right: { style: BorderStyle.NONE },
+        insideVertical: { style: BorderStyle.NONE },
+        insideHorizontal: { style: BorderStyle.NONE },
+      },
+    });
 
-  return [table];
+    return [table];
 };
 
 export const generateLatex = (data: ResumeData, t: Translation): string => {
@@ -715,14 +704,14 @@ export const extractTextFromPdf = async (file: File): Promise<string> => {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   let fullText = '';
-
+  
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
     const pageText = textContent.items.map((item: any) => item.str).join(' ');
     fullText += pageText + ' ';
   }
-
+  
   return fullText;
 };
 
@@ -734,7 +723,7 @@ export const extractTextFromDocx = async (file: File): Promise<string> => {
 
 export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const lowerText = text.toLowerCase();
-
+  
   const sections = {
     experience: /experience|employment|history|work/i.test(lowerText),
     education: /education|university|college|degree/i.test(lowerText),
@@ -751,7 +740,7 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const hasLinkedIn = /linkedin\.com\/in\//i.test(text);
 
   const actionVerbs = [
-    'led', 'managed', 'developed', 'created', 'implemented', 'designed', 'improved',
+    'led', 'managed', 'developed', 'created', 'implemented', 'designed', 'improved', 
     'increased', 'reduced', 'saved', 'achieved', 'launched', 'mentored', 'analyzed'
   ];
   const foundKeywords = actionVerbs.filter(verb => lowerText.includes(verb));
@@ -759,11 +748,11 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
 
   let score = 0;
   const breakdown = {
-    sections: 0,
-    keywords: 0,
-    formatting: 0,
-    skills: 0,
-    clarity: 0
+    sections: 0, 
+    keywords: 0, 
+    formatting: 0, 
+    skills: 0, 
+    clarity: 0   
   };
 
   breakdown.sections = (foundSections.length / 5) * 20;
@@ -775,14 +764,14 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
   const isPdf = fileName.toLowerCase().endsWith('.pdf');
   const isDocx = fileName.toLowerCase().endsWith('.docx');
   let formattingScore = 15;
-  if (!text || text.length < 100) formattingScore = 0;
+  if (!text || text.length < 100) formattingScore = 0; 
   breakdown.formatting = formattingScore;
   score += breakdown.formatting;
 
   if (sections.skills) {
-    breakdown.skills = 15;
+      breakdown.skills = 15;
   } else {
-    breakdown.skills = 5;
+      breakdown.skills = 5;
   }
   score += breakdown.skills;
 
@@ -798,7 +787,7 @@ export const analyzeResume = (text: string, fileName: string): AtsResult => {
 
   if (hasEmail) strengths.push('Contact information (Email) detected.');
   else improvements.push('Missing email address.');
-
+  
   if (sections.experience) strengths.push('Work Experience section detected.');
   else improvements.push('Add a clear "Work Experience" section.');
 
