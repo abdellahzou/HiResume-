@@ -55,6 +55,8 @@ export const printResume = (contentScale: number = 1) => {
       }
       #resume-preview-content {
         width: 210mm !important;
+        height: auto !important;
+        overflow: visible !important;
         box-shadow: none !important;
         margin: 0 !important;
         /* Ensure the outer container doesn't have transform */
@@ -65,6 +67,7 @@ export const printResume = (contentScale: number = 1) => {
         transform: scale(${contentScale}) !important;
         transform-origin: top left !important;
         width: calc(100% / ${contentScale}) !important;
+        height: auto !important;
       }
     </style>
   `);
