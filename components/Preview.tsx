@@ -969,7 +969,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
           transform: `scale(${displayScale})`,
           transformOrigin: 'top center',
           width: `${A4_WIDTH_PX}px`,
-          height: `${A4_HEIGHT_PX}px`,
+          minHeight: `${A4_HEIGHT_PX}px`,
           flexShrink: 0,
         }}
       >
@@ -980,7 +980,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
         <div
           id="resume-preview-content"
           ref={contentRef}
-          className="bg-white shadow-2xl w-full h-full overflow-hidden mx-auto"
+          className="bg-white shadow-2xl w-full mx-auto"
           style={contentStyles}
         >
           {/* 
@@ -992,7 +992,7 @@ export const Preview: React.FC<PreviewProps> = ({ t, className }) => {
             transform: `scale(var(--content-scale))`,
             transformOrigin: 'top left',
             width: 'calc(100% / var(--content-scale))',
-            height: '100%'
+            minHeight: '100%'
           }}>
             <TemplateComponent resume={sortedResume} t={t} />
           </div>
